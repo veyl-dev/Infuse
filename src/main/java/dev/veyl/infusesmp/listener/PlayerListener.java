@@ -33,6 +33,7 @@ public final class PlayerListener implements Listener {
     private final InfuseSMP plugin;
     private final EffectService effects;
     private final PlayerDataStore store;
+    private final java.util.Map<java.util.UUID,Long> frostTrailCooldown=new java.util.HashMap<>();
     public PlayerListener(InfuseSMP plugin,EffectService effects,PlayerDataStore store){
         this.plugin=plugin;this.effects=effects;this.store=store;
     }
@@ -114,19 +115,23 @@ public final class PlayerListener implements Listener {
         event.setAmount((int)Math.round(event.getAmount()*multiplier));
     }
     private void createSnowTrail(org.bukkit.entity.Player player){
+        long now=System.currentTimeMillis();
+        if(now-frostTrailCooldown.getOrDefault(player.getUniqueId(),0L)<500L)return;
+        frostTrailCooldown.put(player.getUniqueId(),now);
         int radius=Math.max(1,Math.min(5,plugin.getConfig().getInt("effect-settings.frost.snow-changing-radius",3)));
         int duration=Math.max(1,plugin.getConfig().getInt("effect-settings.frost.snow-duration-seconds",5));
         Block center=player.getLocation().getBlock();
+        java.util.List<Block> placed=new java.util.ArrayList<>();
         for(int x=-radius;x<=radius;x++)for(int z=-radius;z<=radius;z++){
             if(x*x+z*z>radius*radius)continue;
             Block ground=center.getRelative(x,-1,z);
             Block snow=ground.getRelative(BlockFace.UP);
             if(!ground.getType().isSolid()||snow.getType()!=org.bukkit.Material.AIR)continue;
-            snow.setType(org.bukkit.Material.SNOW,false);
-            plugin.getServer().getScheduler().runTaskLater(plugin,()->{
-                if(snow.getType()==org.bukkit.Material.SNOW)snow.setType(org.bukkit.Material.AIR,false);
-            },duration*20L);
+            snow.setType(org.bukkit.Material.SNOW,false);placed.add(snow);
         }
+        if(!placed.isEmpty())plugin.getServer().getScheduler().runTaskLater(plugin,()->{
+            for(Block snow:placed)if(snow.getType()==org.bukkit.Material.SNOW)snow.setType(org.bukkit.Material.AIR,false);
+        },duration*20L);
     }
     @EventHandler(ignoreCancelled=true)
     public void onFallDamage(EntityDamageEvent event){
