@@ -93,8 +93,7 @@ public final class ResourcePackAdapter {
     private static String modernPotionModel(){
         StringBuilder json=new StringBuilder("{\"model\":{\"type\":\"range_dispatch\",\"property\":\"custom_model_data\",\"index\":0,\"scale\":1,\"entries\":[");
         List<Integer> ids=new ArrayList<>();
-        for(int i=414001;i<=414013;i++)ids.add(i);
-        for(int i=414101;i<=414112;i++)ids.add(i);
+        for(int i=414101;i<=414113;i++)ids.add(i);
         for(int i=0;i<ids.size();i++){
             if(i>0)json.append(",");
             json.append("{\"threshold\":").append(ids.get(i)).append(",\"model\":{\"type\":\"model\",\"model\":\"minecraft:item/potion_custom\",\"tints\":[{\"type\":\"potion\",\"default\":16253176}]}}");
@@ -105,8 +104,7 @@ public final class ResourcePackAdapter {
     private static String legacyPotionModel(){
         StringBuilder json=new StringBuilder("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"minecraft:item/potion\"},\"overrides\":[");
         List<Integer> ids=new ArrayList<>();
-        for(int i=414001;i<=414013;i++)ids.add(i);
-        for(int i=414101;i<=414112;i++)ids.add(i);
+        for(int i=414101;i<=414113;i++)ids.add(i);
         for(int i=0;i<ids.size();i++){
             if(i>0)json.append(",");
             json.append("{\"predicate\":{\"custom_model_data\":").append(ids.get(i)).append("},\"model\":\"minecraft:item/potion_custom\"}");
