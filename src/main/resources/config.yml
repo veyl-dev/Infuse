@@ -85,6 +85,34 @@ durations:
   strength: 15
   thunder: 10
   ender: 15
+augmented-cooldowns:
+  emerald: 76
+  feather: 33
+  fire: 36
+  frost: 76
+  haste: 46
+  heart: 91
+  invisibility: 61
+  ocean: 46
+  regeneration: 61
+  speed: 11
+  strength: 61
+  thunder: 51
+  ender: 50
+augmented-durations:
+  emerald: 35
+  feather: 2
+  fire: 6
+  frost: 20
+  haste: 20
+  heart: 80
+  invisibility: 25
+  ocean: 20
+  regeneration: 30
+  speed: 1
+  strength: 20
+  thunder: 10
+  ender: 20
 effect-settings:
   strength: {shield-disable-seconds: 10, shield-disable-durability: 20, shield-penetration: 2.0, mob-damage-multiplier: 2.0, double-critical-multiplier: 1.334}
   heart: {passive-hearts: 15, spark-hearts: 20, return-after-hit-seconds: 10}
