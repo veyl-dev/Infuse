@@ -111,7 +111,7 @@ public final class EffectService {
         boolean augmented=slot.equalsIgnoreCase("primary")?d.primaryAugmented():d.secondaryAugmented();
         remove(player,slot);
         player.getInventory().addItem(createEffectItem(effect,augmented));
-        player.sendMessage(ChatColor.GREEN+"Drained "+effect.displayName()+" from your "+slot+" slot.");
+        plugin.messages().send(player,"drained",java.util.Map.of("effect",effect.displayName(),"slot",slot));
         return true;
     }
     public void remove(Player player,String slot){
@@ -228,6 +228,7 @@ public final class EffectService {
         player.getWorld().spawnParticle(Particle.END_ROD,player.getLocation().add(0,1,0),18,.5,.6,.5,.02);
         runSpark(player,effect);
         runTimedSpark(player,effect,duration*20L);
+        plugin.messages().send(player,"spark-used",java.util.Map.of("slot",slot));
         return true;
     }
     private void runSpark(Player p,InfuseEffect e){
