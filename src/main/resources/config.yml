@@ -10,6 +10,10 @@ settings:
   head-drop: false
   lock-effect-slots: false
   disabled-worlds: [disabled_world]
+  controls:
+    enabled: true
+    default-primary: swap
+    default-secondary: drop
   trust-list:
     maximum: 3
     action-delay-seconds: 10
