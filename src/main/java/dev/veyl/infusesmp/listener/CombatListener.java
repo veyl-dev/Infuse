@@ -13,6 +13,10 @@ import org.bukkit.event.entity.EntityDamageEvent;
 public final class CombatListener implements Listener {
     private final EffectService effects;
     public CombatListener(EffectService effects){this.effects=effects;}
+    @EventHandler(ignoreCancelled=true,priority=org.bukkit.event.EventPriority.MONITOR)
+    public void onCursedDamage(EntityDamageEvent event){
+        if(event.getEntity() instanceof Player victim)effects.shareEnderCurseDamage(victim,event.getFinalDamage());
+    }
     @EventHandler(ignoreCancelled=true)
     public void onPlayerDamage(EntityDamageByEntityEvent event){
         if(!(event.getDamager() instanceof Player attacker)||!(event.getEntity() instanceof LivingEntity victim))return;
