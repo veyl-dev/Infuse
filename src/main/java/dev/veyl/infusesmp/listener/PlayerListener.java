@@ -10,6 +10,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.entity.Projectile;
 
 public final class PlayerListener implements Listener {
     private final InfuseSMP plugin;
@@ -45,6 +50,56 @@ public final class PlayerListener implements Listener {
         if(!"drop".equalsIgnoreCase(data.secondaryControl()))return;
         if(data.secondary()==null)return;
         effects.activate(player,false);event.setCancelled(true);
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onFallDamage(EntityDamageEvent event){
+        if(!(event.getEntity() instanceof org.bukkit.entity.Player player))return;
+        if(event.getCause()!=EntityDamageEvent.DamageCause.FALL)return;
+        if(effects.hasEffect(player,"feather"))event.setCancelled(true);
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onFoodChange(FoodLevelChangeEvent event){
+        if(event.getEntity() instanceof org.bukkit.entity.Player player&&effects.hasEffect(player,"regeneration"))event.setFoodLevel(20);
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onConsumePassives(PlayerItemConsumeEvent event){
+        var player=event.getPlayer();
+        if(effects.hasEffect(player,"heart")){
+            if(event.getItem().getType()==org.bukkit.Material.ENCHANTED_GOLDEN_APPLE)
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.ABSORPTION,2400,4));
+            else player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.ABSORPTION,600,0));
+        }
+        if(effects.hasEffect(player,"regeneration")){
+            plugin.getServer().getScheduler().runTask(plugin,()->player.setSaturation(Math.min(20f,player.getSaturation()+6f)));
+        }
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onFireBow(EntityShootBowEvent event){
+        if(!(event.getEntity() instanceof org.bukkit.entity.Player player))return;
+        if(!effects.hasEffect(player,"fire"))return;
+        if(event.getForce()>=1&&event.getProjectile() instanceof Projectile projectile)projectile.setFireTicks(100);
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onMovePassives(PlayerMoveEvent event){
+        var player=event.getPlayer();
+        if(event.getTo()==null||event.getFrom().getBlockX()==event.getTo().getBlockX()&&event.getFrom().getBlockY()==event.getTo().getBlockY()&&event.getFrom().getBlockZ()==event.getTo().getBlockZ())return;
+        if(effects.hasEffect(player,"fire")&&player.isInLava()){
+            var direction=player.getLocation().getDirection().normalize().multiply(plugin.getConfig().getDouble("effect-settings.fire.lava-walk-speed",.6));
+            player.setVelocity(direction);
+        }
+        if(effects.hasEffect(player,"feather")&&player.isOnGround()&&player.getFallDistance()>3){
+            double radius=plugin.getConfig().getDouble("effect-settings.feather.land-radius",4);
+            for(var entity:player.getNearbyEntities(radius,radius,radius)){
+                if(entity instanceof org.bukkit.entity.LivingEntity target&&target!=player
+                        &&!(target instanceof org.bukkit.entity.Player other&&effects.data(player).trusted().contains(other.getUniqueId()))){
+                    target.damage(plugin.getConfig().getDouble("effect-settings.feather.land-damage",8),player);
+                    target.setVelocity(target.getVelocity().add(new org.bukkit.util.Vector(0,1,0)));
+                }
+            }
+            player.getWorld().spawnParticle(org.bukkit.Particle.CLOUD,player.getLocation(),35,.5,.2,.5,.1);
+            player.getWorld().playSound(player.getLocation(),org.bukkit.Sound.ITEM_MACE_SMASH_GROUND_HEAVY,1f,1f);
+            player.setFallDistance(0);
+        }
     }
     @EventHandler(ignoreCancelled=true)
     public void onEffectDrink(PlayerItemConsumeEvent event){
