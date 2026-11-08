@@ -16,6 +16,8 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.entity.Projectile;
 
 public final class PlayerListener implements Listener {
@@ -36,7 +38,9 @@ public final class PlayerListener implements Listener {
             }
         }
     }
-    @EventHandler public void onQuit(PlayerQuitEvent event){store.save();}
+    @EventHandler public void onQuit(PlayerQuitEvent event){effects.restoreAllTemporaryEnchants(event.getPlayer());store.save();}
+    @EventHandler public void onHeldItem(PlayerItemHeldEvent event){plugin.getServer().getScheduler().runTask(plugin,()->effects.applyPassive(event.getPlayer()));}
+    @EventHandler public void onInventoryClose(InventoryCloseEvent event){for(var item:event.getView().getTopInventory().getContents())effects.restoreTemporaryEnchants(item);}
     @EventHandler(ignoreCancelled=true)
     public void onSwapControl(PlayerSwapHandItemsEvent event){
         if(!plugin.getConfig().getBoolean("settings.controls.enabled",true))return;
@@ -47,15 +51,16 @@ public final class PlayerListener implements Listener {
     }
     @EventHandler(ignoreCancelled=true)
     public void onDropControl(PlayerDropItemEvent event){
-        if(!plugin.getConfig().getBoolean("settings.controls.enabled",true))return;
         var player=event.getPlayer();var data=effects.data(player);
-        if(!"drop".equalsIgnoreCase(data.secondaryControl()))return;
-        if(data.secondary()==null)return;
-        effects.activate(player,false);event.setCancelled(true);
+        if(plugin.getConfig().getBoolean("settings.controls.enabled",true)&&"drop".equalsIgnoreCase(data.secondaryControl())&&data.secondary()!=null){
+            effects.activate(player,false);event.setCancelled(true);return;
+        }
+        effects.restoreTemporaryEnchants(event.getItemDrop().getItemStack());
     }
     @EventHandler
     public void onDeath(PlayerDeathEvent event){
         var player=event.getEntity();
+        effects.restoreAllTemporaryEnchants(player);
         if(event.getKeepInventory())return;
         if(!plugin.getConfig().getBoolean("settings.drop-on-natural-death",true)&&player.getKiller()==null)return;
         if(effects.isEffectBlocked(player))return;
