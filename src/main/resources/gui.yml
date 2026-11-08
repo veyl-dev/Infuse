@@ -21,10 +21,10 @@ recipes:
 
 effects:
   title: "&3InfuseSMP S3 • Effects"
-  rows: 6
-  slots: [10, 12, 14, 16, 19, 21, 23, 25, 28, 30, 32, 34, 40]
-  close-slot: 49
-  filler: GRAY_STAINED_GLASS_PANE
+  rows: 5
+  slots: [4, 12, 13, 14, 40, 20, 21, 23, 24, 30, 31, 32, 22]
+  close-slot: 44
+  filler: BLACK_STAINED_GLASS_PANE
 recipe:
   title: "&3Recipe • {effect}"
   rows: 5
