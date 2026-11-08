@@ -23,5 +23,9 @@ public final class MessageService {
             message=message.replace("{"+entry.getKey()+"}",entry.getValue());
         sender.sendMessage(mini.deserialize(prefix+message));
     }
+    public void sendList(CommandSender sender,String key){
+        var lines=messages.getStringList(key);boolean first=true;
+        for(String line:lines){sender.sendMessage(mini.deserialize((first?messages.getString("prefix",""):"")+line));first=false;}
+    }
     public String raw(String key,String fallback){return messages.getString(key,fallback);}
 }
