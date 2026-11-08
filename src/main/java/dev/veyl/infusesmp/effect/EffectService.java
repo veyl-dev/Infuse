@@ -94,7 +94,7 @@ public final class EffectService {
             return false;
         }
         equip(player,slot,effect,isAugmentedItem(item));
-        player.sendMessage(ChatColor.GREEN+effect.displayName()+" equipped in your "+slot+" slot.");
+        plugin.messages().send(player,"effect-added",java.util.Map.of("effect",effect.displayName(),"slot",slot));
         return true;
     }
     public void equip(Player player,String slot,InfuseEffect effect,boolean augmented){
