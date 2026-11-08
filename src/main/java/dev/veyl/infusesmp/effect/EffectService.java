@@ -210,7 +210,7 @@ public final class EffectService {
         String slot=primary?"primary":"secondary";
         String key=(primary?"p:":"s:")+id;long now=System.currentTimeMillis();
         long until=d.cooldowns().getOrDefault(key,0L);
-        if(until>now){player.sendMessage(ChatColor.RED+"Spark recharging: "+((until-now+999)/1000)+"s");return false;}
+        if(until>now){plugin.messages().send(player,"cooldown",java.util.Map.of("time",((until-now+999)/1000)+"s"));return false;}
         long duration=plugin.getConfig().getLong((augmented?"augmented-durations.":"durations.")+id,plugin.getConfig().getLong("durations."+id,10));
         long cooldown=plugin.getConfig().getLong((augmented?"augmented-cooldowns.":"cooldowns.")+id,plugin.getConfig().getLong("cooldowns."+id,effect.cooldownSeconds()));
         d.cooldowns().put(key,now+(duration+cooldown)*1000L);
