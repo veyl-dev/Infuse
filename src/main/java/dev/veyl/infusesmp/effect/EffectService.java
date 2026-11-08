@@ -28,7 +28,7 @@ public final class EffectService {
         if(meta!=null){
             meta.setDisplayName((augmented?ChatColor.LIGHT_PURPLE:ChatColor.GREEN)+effect.displayName()+" Effect");
             meta.setColor(effect.color());
-            meta.setCustomModelData(effect.modelData());
+            meta.setCustomModelData(effect.modelData()+(augmented?100:0));
             meta.getPersistentDataContainer().set(itemKey,PersistentDataType.STRING,effect.id()+(augmented?":augmented":""));
             meta.setLore(List.of(ChatColor.GRAY+"Infuse SMP Season 3",
                     ChatColor.DARK_GRAY+"Drink to equip in your next available slot",
