@@ -52,6 +52,8 @@ public final class PlayerListener implements Listener {
             String url=plugin.getConfig().getString("settings.resource-pack.url","");
             String hash=plugin.getConfig().getString("settings.resource-pack.sha1","");
             if(url!=null&&!url.isBlank()){
+                String prompt=plugin.getConfig().getString("settings.resource-pack.prompt","");
+                if(prompt!=null&&!prompt.isBlank())event.getPlayer().sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&',prompt));
                 if(hash!=null&&hash.matches("(?i)[0-9a-f]{40}"))event.getPlayer().setResourcePack(url,hash);
                 else event.getPlayer().setResourcePack(url);
             }
