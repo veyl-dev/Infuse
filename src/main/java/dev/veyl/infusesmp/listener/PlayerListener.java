@@ -14,6 +14,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.entity.Projectile;
 
 public final class PlayerListener implements Listener {
@@ -50,6 +51,30 @@ public final class PlayerListener implements Listener {
         if(!"drop".equalsIgnoreCase(data.secondaryControl()))return;
         if(data.secondary()==null)return;
         effects.activate(player,false);event.setCancelled(true);
+    }
+    @EventHandler
+    public void onDeath(PlayerDeathEvent event){
+        var player=event.getEntity();
+        if(event.getKeepInventory())return;
+        if(!plugin.getConfig().getBoolean("settings.drop-on-natural-death",true)&&player.getKiller()==null)return;
+        if(effects.isEffectBlocked(player))return;
+        var data=effects.data(player);
+        String mode=plugin.getConfig().getString("settings.effect-drop-mode","random").toLowerCase(java.util.Locale.ROOT);
+        if(mode.equals("none"))return;
+        String slot;
+        if(mode.equals("only_primary"))slot="primary";
+        else if(mode.equals("only_secondary"))slot="secondary";
+        else if(mode.equals("prefer_primary"))slot=data.primary()!=null?"primary":"secondary";
+        else if(mode.equals("prefer_secondary"))slot=data.secondary()!=null?"secondary":"primary";
+        else if(data.primary()==null)slot="secondary";
+        else if(data.secondary()==null)slot="primary";
+        else slot=java.util.concurrent.ThreadLocalRandom.current().nextBoolean()?"primary":"secondary";
+        String id=slot.equals("primary")?data.primary():data.secondary();
+        if(id==null)return;
+        var effect=dev.veyl.infusesmp.effect.InfuseEffect.fromId(id);if(effect==null)return;
+        boolean augmented=slot.equals("primary")?data.primaryAugmented():data.secondaryAugmented();
+        event.getDrops().add(effects.createEffectItem(effect,augmented));
+        effects.remove(player,slot);
     }
     @EventHandler(ignoreCancelled=true)
     public void onFallDamage(EntityDamageEvent event){
