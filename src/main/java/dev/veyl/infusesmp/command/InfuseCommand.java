@@ -17,6 +17,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
     @Override public boolean onCommand(CommandSender sender,Command command,String label,String[] args){
         String root=command.getName().toLowerCase(Locale.ROOT);
         if(root.equals("activate"))return activate(sender,args);
+        if(root.equals("drain"))return drain(sender,args);
         if(root.equals("swap")){
             if(!(sender instanceof Player p))return true;
             effects.data(p).swap();effects.applyPassive(p);p.sendMessage(ChatColor.GREEN+"Your Infuse slots have been swapped.");return true;
@@ -27,6 +28,14 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         return infuse(sender,args);
+    }
+    private boolean drain(CommandSender sender,String[] args){
+        if(!(sender instanceof Player player)){sender.sendMessage("Players only.");return true;}
+        if(args.length!=1||(!args[0].equalsIgnoreCase("primary")&&!args[0].equalsIgnoreCase("secondary"))){
+            sender.sendMessage(ChatColor.RED+"Usage: /drain <primary|secondary>");return true;
+        }
+        if(!effects.drain(player,args[0]))sender.sendMessage(ChatColor.RED+"Cannot drain that slot. It may be empty or your inventory may be full.");
+        return true;
     }
     private boolean activate(CommandSender sender,String[] args){
         if(!(sender instanceof Player p)){sender.sendMessage("Players only.");return true;}
