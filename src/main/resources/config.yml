@@ -18,6 +18,8 @@ settings:
     enabled: true
     default-primary: swap
     default-secondary: drop
+  drop-on-natural-death: true
+  effect-drop-mode: random
   trust-list:
     maximum: 3
     action-delay-seconds: 10
