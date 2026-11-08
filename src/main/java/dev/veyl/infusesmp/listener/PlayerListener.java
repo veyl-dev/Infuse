@@ -162,9 +162,11 @@ public final class PlayerListener implements Listener {
             target.getWorld().strikeLightningEffect(target.getLocation());effects.thunderDamage(target,player,2.0);
         }
         if(event.getEntity() instanceof DragonFireball fireball&&fireball.getShooter() instanceof org.bukkit.entity.Player player
-                &&effects.hasEffect(player,"ender")&&event.getHitEntity() instanceof org.bukkit.entity.LivingEntity target){
+                &&effects.hasEffect(player,"ender")&&event.getHitEntity() instanceof org.bukkit.entity.LivingEntity target
+                &&!effects.isEffectBlocked(target.getLocation())){
             target.damage(6.0,player);
-            effects.applyEnderCurse((org.bukkit.entity.Player)target,player);
+            if(target instanceof org.bukkit.entity.Player cursed)effects.applyEnderCurse(cursed,player);
+            else target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.WITHER,100,1));
         }
     }
     @EventHandler(ignoreCancelled=true)
