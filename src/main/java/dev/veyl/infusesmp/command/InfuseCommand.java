@@ -20,7 +20,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         if(root.equals("drain"))return drain(sender,args);
         if(root.equals("swap")){
             if(!(sender instanceof Player p))return true;
-            effects.data(p).swap();effects.applyPassive(p);p.sendMessage(ChatColor.GREEN+"Your Infuse slots have been swapped.");return true;
+            if(plugin.getConfig().getBoolean("settings.lock-effect-slots",false)){p.sendMessage(ChatColor.RED+"Your effect slots are locked.");return true;}effects.data(p).swap();effects.applyPassive(p);plugin.messages().send(p,"swapped");return true;
         }
         if(root.equals("trust"))return trust(sender,args);
         if(root.equals("recipes")){
@@ -47,9 +47,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
     }
     private boolean infuse(CommandSender sender,String[] args){
         if(args.length==0||args[0].equalsIgnoreCase("help")){
-            sender.sendMessage(ChatColor.GREEN+"InfuseSMP S3");
-            sender.sendMessage(ChatColor.GRAY+"/infuse gui | effects | controls | bind <slot> <swap|drop> | get [player] | add <player> <slot> <effect> [augmented]");
-            sender.sendMessage(ChatColor.GRAY+"/infuse remove <player> <slot> | give <player> <effect> [augmented] | reload");
+            plugin.messages().sendList(sender,"help");
             return true;
         }
         switch(args[0].toLowerCase(Locale.ROOT)){
@@ -59,7 +57,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
             case "gui" -> { if(sender instanceof Player player)plugin.menus().openEffects(player); else sender.sendMessage("Players only."); }
             case "reload" -> {
                 if(!sender.hasPermission("infusesmp.reload"))return deny(sender);
-                plugin.reloadConfig();plugin.messages().reload();plugin.menus().reload();plugin.recipes().reload();sender.sendMessage(ChatColor.GREEN+"InfuseSMP S3 configuration reloaded.");
+                plugin.reloadConfig();plugin.messages().reload();plugin.menus().reload();plugin.recipes().reload();plugin.messages().send(sender,"reloaded");
             }
             case "get" -> {
                 Player target=args.length>1?Bukkit.getPlayerExact(args[1]):sender instanceof Player p?p:null;
@@ -101,7 +99,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.RED+"Usage: /infuse bind <primary|secondary> <swap|drop>");return true;
         }
         effects.data(p).control(args[1].equalsIgnoreCase("primary"),args[2].toLowerCase(Locale.ROOT));
-        p.sendMessage(ChatColor.GREEN+"Bound "+args[1]+" spark to "+args[2]+".");
+        plugin.messages().send(p,"bind-set",Map.of("slot",args[1],"control",args[2]));
         return true;
     }
     private boolean trust(CommandSender sender,String[] args){
@@ -113,7 +111,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         }
         if(args[0].equalsIgnoreCase("clear")){
             if(!trustDelayReady(p,d))return true;
-            d.trusted().clear();d.lastTrustAction(System.currentTimeMillis());p.sendMessage(ChatColor.YELLOW+"Trust list cleared.");return true;
+            d.trusted().clear();d.lastTrustAction(System.currentTimeMillis());plugin.messages().send(p,"trust-cleared");return true;
         }
         if(args.length<2){p.sendMessage(ChatColor.RED+"/trust <add|remove> <player>");return true;}
         if(!args[0].equalsIgnoreCase("add")&&!args[0].equalsIgnoreCase("remove")){p.sendMessage(ChatColor.RED+"Choose add or remove.");return true;}
@@ -123,11 +121,11 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         if(args[0].equalsIgnoreCase("add")){
             int max=plugin.getConfig().getInt("settings.trust-list.maximum",3);
             if(d.trusted().contains(target.getUniqueId())){p.sendMessage(ChatColor.YELLOW+"That player is already trusted.");return true;}
-            if(d.trusted().size()>=max){p.sendMessage(ChatColor.RED+"Trust list is full.");return true;}
-            d.trusted().add(target.getUniqueId());p.sendMessage(ChatColor.GREEN+"Trusted "+target.getName());
+            if(d.trusted().size()>=max){plugin.messages().send(p,"trust-full");return true;}
+            d.trusted().add(target.getUniqueId());plugin.messages().send(p,"trust-added",Map.of("player",target.getName()));
         }else{
             if(!d.trusted().remove(target.getUniqueId())){p.sendMessage(ChatColor.YELLOW+"That player is not on your trust list.");return true;}
-            p.sendMessage(ChatColor.YELLOW+"Untrusted "+target.getName());
+            plugin.messages().send(p,"trust-removed",Map.of("player",target.getName()));
         }
         d.lastTrustAction(System.currentTimeMillis());
         return true;
