@@ -1,0 +1,20 @@
+recipes:
+  title: "<gradient:#A2C81C:#21CD76>Infuse Recipes"
+  rows: 5
+  filler: BLACK_STAINED_GLASS_PANE
+  exit-slot: 44
+  back-slot: 36
+  effects:
+    emerald: 4
+    feather: 12
+    fire: 13
+    frost: 14
+    haste: 20
+    heart: 21
+    ender: 22
+    invisibility: 23
+    ocean: 24
+    regeneration: 30
+    speed: 31
+    strength: 32
+    thunder: 40
