@@ -111,7 +111,7 @@ public final class EffectService {
         d.addHistory("remove:"+slot);applyPassive(player);
     }
     public void applyPassive(Player player){
-        if(isEffectBlocked(player))return;
+        if(isEffectBlocked(player)){restoreTemporaryEnchants(player.getInventory().getItemInMainHand());return;}
         PlayerData d=data(player);
         refreshHeldItemEnchants(player);
         applyBasicPassive(player,d.primary());
