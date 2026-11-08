@@ -21,3 +21,9 @@ help:
   - "<gray>/activate <primary|secondary> <dark_gray>- <white>Use a spark"
   - "<gray>/swap <dark_gray>- <white>Swap your slots"
   - "<gray>/trust <add|remove|list|clear> [player]"
+
+swapped: "<green>Your Infuse slots have been swapped."
+drained: "<green>Drained <white>{effect}</white> from your <white>{slot}</white> slot."
+drain-failed: "<red>Cannot drain that slot. It may be empty or your inventory is full."
+bind-set: "<green>Bound your <white>{slot}</white> spark to <white>{control}</white>."
+trust-cleared: "<yellow>Your trust list has been cleared."
