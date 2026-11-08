@@ -33,6 +33,7 @@ public final class InfuseSMP extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerListener(this, effectService, dataStore), this);
         long interval = Math.max(20L, getConfig().getLong("settings.autosave-seconds", 60L) * 20L);
         getServer().getScheduler().runTaskTimer(this, dataStore::save, interval, interval);
+        getServer().getScheduler().runTaskTimer(this, effectService::refreshPassives, 20L, 20L);
         getLogger().info("InfuseSMP S3 enabled.");
     }
     @Override public void onDisable() { if (dataStore != null) dataStore.save(); }
