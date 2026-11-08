@@ -90,7 +90,12 @@ public final class EffectService {
         PlayerData d=data(player);
         applyBasicPassive(player,d.primary());
         applyBasicPassive(player,d.secondary());
-        if("ocean".equals(d.primary())||"ocean".equals(d.secondary()))applyIfMissing(player,PotionEffectType.WATER_BREATHING,40,0);
+        if("ender".equals(d.primary())||"ender".equals(d.secondary())){
+            double radius=plugin.getConfig().getDouble("effect-settings.ender.passive-radius",10);
+            for(Player target:nearbyPlayers(player,radius)){
+                if(!d.trusted().contains(target.getUniqueId()))applyIfMissing(target,PotionEffectType.GLOWING,40,0);
+            }
+        }
     }
     public void refreshPassives(){
         for(Player player:plugin.getServer().getOnlinePlayers())applyPassive(player);
@@ -99,9 +104,26 @@ public final class EffectService {
         if(type!=null&&!player.hasPotionEffect(type))player.addPotionEffect(new PotionEffect(type,duration,amplifier,true,false,true));
     }
     private void applyBasicPassive(Player player,String id){
-        InfuseEffect effect=InfuseEffect.fromId(id);
-        if(effect==null||effect.passive()==null)return;
-        applyIfMissing(player,effect.passive(),40,0);
+        if(id==null)return;
+        switch(id){
+            case "emerald" -> applyIfMissing(player,PotionEffectType.HERO_OF_THE_VILLAGE,40,0);
+            case "fire" -> applyIfMissing(player,PotionEffectType.FIRE_RESISTANCE,40,0);
+            case "frost" -> {
+                Material under=player.getLocation().subtract(0,1,0).getBlock().getType();
+                if(under==Material.ICE||under==Material.PACKED_ICE||under==Material.BLUE_ICE||under==Material.SNOW_BLOCK)
+                    applyIfMissing(player,PotionEffectType.SPEED,40,1);
+            }
+            case "haste" -> applyIfMissing(player,PotionEffectType.HASTE,40,0);
+            case "heart" -> applyIfMissing(player,PotionEffectType.HEALTH_BOOST,40,2);
+            case "invisibility" -> applyIfMissing(player,PotionEffectType.INVISIBILITY,40,0);
+            case "ocean" -> {
+                applyIfMissing(player,PotionEffectType.WATER_BREATHING,40,0);
+                applyIfMissing(player,PotionEffectType.DOLPHINS_GRACE,40,0);
+            }
+            case "regeneration" -> applyIfMissing(player,PotionEffectType.REGENERATION,40,0);
+            case "speed" -> applyIfMissing(player,PotionEffectType.SPEED,40,0);
+            default -> { }
+        }
     }
     public boolean activate(Player player,boolean primary){
         PlayerData d=data(player);String id=primary?d.primary():d.secondary();if(id==null)return false;
