@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.potion.PotionEffect;
@@ -21,8 +23,11 @@ public final class EffectService {
     private final InfuseSMP plugin;
     private final PlayerDataStore store;
     private final NamespacedKey itemKey;
+    private final NamespacedKey hasteFortuneKey,hasteEfficiencyKey,hasteUnbreakingKey,emeraldLootingKey;
     public EffectService(InfuseSMP plugin,PlayerDataStore store){
         this.plugin=plugin;this.store=store;this.itemKey=new NamespacedKey(plugin,"infuse_effect");
+        this.hasteFortuneKey=new NamespacedKey(plugin,"haste_original_fortune");this.hasteEfficiencyKey=new NamespacedKey(plugin,"haste_original_efficiency");
+        this.hasteUnbreakingKey=new NamespacedKey(plugin,"haste_original_unbreaking");this.emeraldLootingKey=new NamespacedKey(plugin,"emerald_original_looting");
     }
     public PlayerData data(Player player){return store.get(player.getUniqueId());}
     public int effectCount(){return InfuseEffect.values().length;}
@@ -108,6 +113,7 @@ public final class EffectService {
     public void applyPassive(Player player){
         if(isEffectBlocked(player))return;
         PlayerData d=data(player);
+        refreshHeldItemEnchants(player);
         applyBasicPassive(player,d.primary());
         applyBasicPassive(player,d.secondary());
         if("ocean".equals(d.primary())||"ocean".equals(d.secondary())){
@@ -124,6 +130,49 @@ public final class EffectService {
                 if(!d.trusted().contains(target.getUniqueId()))applyIfMissing(target,PotionEffectType.GLOWING,40,0);
             }
         }
+    }
+    private void refreshHeldItemEnchants(Player player){
+        ItemStack item=player.getInventory().getItemInMainHand();
+        if(item==null||item.getType()==Material.AIR)return;
+        PlayerData d=data(player);
+        boolean tool=item.getType().name().endsWith("_PICKAXE")||item.getType().name().endsWith("_AXE")
+                ||item.getType().name().endsWith("_SHOVEL")||item.getType().name().endsWith("_HOE");
+        if(tool&&("haste".equals(d.primary())||"haste".equals(d.secondary()))){
+            applyTemporaryEnchant(item,Enchantment.FORTUNE,hasteFortuneKey,plugin.getConfig().getInt("effect-settings.haste.fortune-level",5));
+            applyTemporaryEnchant(item,Enchantment.EFFICIENCY,hasteEfficiencyKey,plugin.getConfig().getInt("effect-settings.haste.efficiency-level",10));
+            applyTemporaryEnchant(item,Enchantment.UNBREAKING,hasteUnbreakingKey,plugin.getConfig().getInt("effect-settings.haste.unbreaking-level",5));
+        }else{
+            restoreTemporaryEnchant(item,hasteFortuneKey,Enchantment.FORTUNE);
+            restoreTemporaryEnchant(item,hasteEfficiencyKey,Enchantment.EFFICIENCY);
+            restoreTemporaryEnchant(item,hasteUnbreakingKey,Enchantment.UNBREAKING);
+        }
+        if(item.getType().name().endsWith("_SWORD")&&("emerald".equals(d.primary())||"emerald".equals(d.secondary())))
+            applyTemporaryEnchant(item,Enchantment.LOOTING,emeraldLootingKey,plugin.getConfig().getInt("effect-settings.emerald.looting-level",5));
+        else restoreTemporaryEnchant(item,emeraldLootingKey,Enchantment.LOOTING);
+    }
+    private void applyTemporaryEnchant(ItemStack item,Enchantment enchant,NamespacedKey key,int level){
+        ItemMeta meta=item.getItemMeta();if(meta==null)return;
+        var pdc=meta.getPersistentDataContainer();
+        if(!pdc.has(key,PersistentDataType.INTEGER))pdc.set(key,PersistentDataType.INTEGER,meta.hasEnchant(enchant)?meta.getEnchantLevel(enchant):-1);
+        meta.addEnchant(enchant,Math.max(1,level),true);item.setItemMeta(meta);
+    }
+    private void restoreTemporaryEnchant(ItemStack item,NamespacedKey key,Enchantment enchant){
+        if(item==null||item.getType()==Material.AIR||!item.hasItemMeta())return;
+        ItemMeta meta=item.getItemMeta();var pdc=meta.getPersistentDataContainer();
+        if(!pdc.has(key,PersistentDataType.INTEGER))return;
+        int original=pdc.get(key,PersistentDataType.INTEGER);
+        if(original<0)meta.removeEnchant(enchant);else meta.addEnchant(enchant,original,true);
+        pdc.remove(key);item.setItemMeta(meta);
+    }
+    public void restoreTemporaryEnchants(ItemStack item){
+        restoreTemporaryEnchant(item,hasteFortuneKey,Enchantment.FORTUNE);
+        restoreTemporaryEnchant(item,hasteEfficiencyKey,Enchantment.EFFICIENCY);
+        restoreTemporaryEnchant(item,hasteUnbreakingKey,Enchantment.UNBREAKING);
+        restoreTemporaryEnchant(item,emeraldLootingKey,Enchantment.LOOTING);
+    }
+    public void restoreAllTemporaryEnchants(Player player){
+        for(ItemStack item:player.getInventory().getContents())restoreTemporaryEnchants(item);
+        restoreTemporaryEnchants(player.getInventory().getItemInOffHand());
     }
     public void refreshPassives(){
         for(Player player:plugin.getServer().getOnlinePlayers())applyPassive(player);
