@@ -49,6 +49,7 @@ public final class RecipeService implements Listener {
         this.plugin=plugin;this.effects=effects;this.rituals=rituals;this.file=new File(plugin.getDataFolder(),"crafting.yml");
         load();registerRecipes();
     }
+    public static String[] recipeIngredients(String id){String[] pattern=PATTERNS.get(id);return pattern==null?null:pattern.clone();}
     private void registerRecipes(){
         int count=0;
         for(Map.Entry<String,String[]> entry:PATTERNS.entrySet()){
