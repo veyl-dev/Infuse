@@ -1,10 +1,27 @@
+# InfuseSMP S3 configuration.
+# Custom model data is intentionally fixed in the plugin and is not configurable here.
+
 regions:
-  disabled: {}
+  disabled:
+    # Add named disabled regions below when needed.
+    # Example:
+    # spawn:
+    #   world: world
+    #   min:
+    #     x: -50
+    #     y: 0
+    #     z: -50
+    #   max:
+    #     x: 50
+    #     y: 255
+    #     z: 50
+
 rituals:
   duration-seconds: 600
   ender-duration-seconds: 3600
   beacon: true
   protect-brewing-stand: true
+
 settings:
   autosave-seconds: 60
   hit-counter-decay-seconds: 15
@@ -14,7 +31,8 @@ settings:
   roll-animation: true
   head-drop: false
   lock-effect-slots: false
-  disabled-worlds: [disabled_world]
+  disabled-worlds:
+    - disabled_world
   controls:
     enabled: true
     default-primary: swap
@@ -29,41 +47,66 @@ settings:
     url: ""
     sha1: ""
     prompt: "Install the InfuseSMP S3 resource pack for the complete experience."
+
 items:
   potion-material: POTION
-  custom-model-data:
-    emerald: 414001
-    feather: 414002
-    fire: 414003
-    frost: 414004
-    haste: 414006
-    heart: 414007
-    invisibility: 414008
-    ocean: 414009
-    regeneration: 414010
-    speed: 414011
-    strength: 414012
-    thunder: 414005
-    ender: 414013
-    wind-charge-base: 414900
-    wind-charge-active: 414901
+
 effects:
-  primary: [heart, strength, regeneration, haste, invisibility, frost, thunder, feather]
-  secondary: [speed, fire, ocean, emerald]
+  primary:
+    - heart
+    - strength
+    - regeneration
+    - haste
+    - invisibility
+    - frost
+    - thunder
+    - feather
+  secondary:
+    - speed
+    - fire
+    - ocean
+    - emerald
   crafting:
-    emerald: {craft-limit: 3, augment-limit: 1}
-    feather: {craft-limit: 3, augment-limit: 1}
-    fire: {craft-limit: 3, augment-limit: 1}
-    frost: {craft-limit: 3, augment-limit: 1}
-    haste: {craft-limit: 3, augment-limit: 1}
-    heart: {craft-limit: 3, augment-limit: 1}
-    invisibility: {craft-limit: 3, augment-limit: 1}
-    ocean: {craft-limit: 3, augment-limit: 1}
-    regeneration: {craft-limit: 3, augment-limit: 1}
-    speed: {craft-limit: 3, augment-limit: 1}
-    strength: {craft-limit: 3, augment-limit: 1}
-    thunder: {craft-limit: 3, augment-limit: 1}
-    ender: {craft-limit: 1, augment-limit: 1}
+    emerald:
+      craft-limit: 3
+      augment-limit: 1
+    feather:
+      craft-limit: 3
+      augment-limit: 1
+    fire:
+      craft-limit: 3
+      augment-limit: 1
+    frost:
+      craft-limit: 3
+      augment-limit: 1
+    haste:
+      craft-limit: 3
+      augment-limit: 1
+    heart:
+      craft-limit: 3
+      augment-limit: 1
+    invisibility:
+      craft-limit: 3
+      augment-limit: 1
+    ocean:
+      craft-limit: 3
+      augment-limit: 1
+    regeneration:
+      craft-limit: 3
+      augment-limit: 1
+    speed:
+      craft-limit: 3
+      augment-limit: 1
+    strength:
+      craft-limit: 3
+      augment-limit: 1
+    thunder:
+      craft-limit: 3
+      augment-limit: 1
+    ender:
+      craft-limit: 1
+      augment-limit: 1
+
 cooldowns:
   emerald: 91
   feather: 63
@@ -78,6 +121,7 @@ cooldowns:
   strength: 91
   thunder: 81
   ender: 60
+
 durations:
   emerald: 30
   feather: 2
@@ -92,6 +136,7 @@ durations:
   strength: 15
   thunder: 10
   ender: 15
+
 augmented-cooldowns:
   emerald: 76
   feather: 33
@@ -106,6 +151,7 @@ augmented-cooldowns:
   strength: 61
   thunder: 51
   ender: 50
+
 augmented-durations:
   emerald: 35
   feather: 2
@@ -120,19 +166,72 @@ augmented-durations:
   strength: 20
   thunder: 10
   ender: 20
+
 effect-settings:
-  strength: {shield-disable-seconds: 10, shield-disable-durability: 20, shield-penetration: 2.0, mob-damage-multiplier: 2.0, double-critical-multiplier: 1.334, trigger-hits: 10}
-  heart: {passive-hearts: 15, spark-hearts: 20, return-after-hit-seconds: 10, trigger-hits: 10}
-  fire: {trigger-hits: 5, ignite-ticks: 100, snowball-cooldown-seconds: 15}
-  thunder: {trigger-hits: 10, lightning-chain-max: 10, lightning-chain-radius: 12}
-  frost: {trigger-hits: 10, freeze-seconds: 30, lava-walk: true, snow-changing-radius: 3, snow-duration-seconds: 5}
-  invisibility: {trigger-hits: 10, spark-radius: 8}
-  regeneration: {trigger-hits: 10, spark-heal-radius: 8}
-  speed: {dash-power: 2.6, dash-damping: 0.6, trigger-hits: 10}
-  feather: {wind-burst-power: 1.5, max-wind-charge: 3}
-  haste: {break-speed-multiplier: 1.5, fortune-level: 5, efficiency-level: 10, unbreaking-level: 5, trigger-hits: 10}
-  ocean: {passive-radius: 8, passive-air-drain: 5, passive-damage: 1.0, pull-radius: 5, pull-strength: 0.3, trigger-hits: 10}
-  emerald: {trigger-hits: 10, xp-gain: 1, xp-multiplier: 2.0, spark-xp-multiplier: 4.0, looting-level: 5, lock-duration-seconds: 10}
-  ender: {teleport-max-radius: 15, trigger-hits: 10, curse-duration-seconds: 10, curse-damage-share: 0.5}
+  strength:
+    shield-disable-seconds: 10
+    shield-disable-durability: 20
+    shield-penetration: 2.0
+    mob-damage-multiplier: 2.0
+    double-critical-multiplier: 1.334
+    trigger-hits: 10
+  heart:
+    passive-hearts: 15
+    spark-hearts: 20
+    return-after-hit-seconds: 10
+    trigger-hits: 10
+  fire:
+    trigger-hits: 5
+    ignite-ticks: 100
+    snowball-cooldown-seconds: 15
+  thunder:
+    trigger-hits: 10
+    lightning-chain-max: 10
+    lightning-chain-radius: 12
+  frost:
+    trigger-hits: 10
+    freeze-seconds: 30
+    lava-walk: true
+    snow-changing-radius: 3
+    snow-duration-seconds: 5
+  invisibility:
+    trigger-hits: 10
+    spark-radius: 8
+  regeneration:
+    trigger-hits: 10
+    spark-heal-radius: 8
+  speed:
+    dash-power: 2.6
+    dash-damping: 0.6
+    trigger-hits: 10
+  feather:
+    wind-burst-power: 1.5
+    max-wind-charge: 3
+  haste:
+    break-speed-multiplier: 1.5
+    fortune-level: 5
+    efficiency-level: 10
+    unbreaking-level: 5
+    trigger-hits: 10
+  ocean:
+    passive-radius: 8
+    passive-air-drain: 5
+    passive-damage: 1.0
+    pull-radius: 5
+    pull-strength: 0.3
+    trigger-hits: 10
+  emerald:
+    trigger-hits: 10
+    xp-gain: 1
+    xp-multiplier: 2.0
+    spark-xp-multiplier: 4.0
+    looting-level: 5
+    lock-duration-seconds: 10
+  ender:
+    teleport-max-radius: 15
+    trigger-hits: 10
+    curse-duration-seconds: 10
+    curse-damage-share: 0.5
+
 storage:
   type: yaml
