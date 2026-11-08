@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,43 +19,54 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.io.File;
 import java.util.List;
 
 public final class MenuService implements Listener {
     private final InfuseSMP plugin;
     private final EffectService effects;
     private final NamespacedKey menuKey;
+    private YamlConfiguration gui;
     public MenuService(InfuseSMP plugin,EffectService effects){
         this.plugin=plugin;this.effects=effects;this.menuKey=new NamespacedKey(plugin,"menu_effect");
+        reload();
     }
+    public void reload(){gui=YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(),"gui.yml"));}
     public void openEffects(Player player){
         MenuHolder holder=new MenuHolder();
-        Inventory inv=Bukkit.createInventory(holder,54,ChatColor.DARK_AQUA+"InfuseSMP S3 • Effects");
+        int rows=Math.max(1,Math.min(6,gui.getInt("effects.rows",6)));
+        Inventory inv=Bukkit.createInventory(holder,rows*9,color(gui.getString("effects.title","&3InfuseSMP S3 • Effects")));
         holder.inventory=inv;
-        ItemStack filler=plain(Material.GRAY_STAINED_GLASS_PANE," ");
-        for(int i=0;i<54;i++)inv.setItem(i,filler);
-        int[] slots={10,12,14,16,19,21,23,25,28,30,32,34,40};
+        ItemStack filler=plain(material("effects.filler",Material.GRAY_STAINED_GLASS_PANE)," ");
+        for(int i=0;i<inv.getSize();i++)inv.setItem(i,filler);
+        List<Integer> slots=gui.getIntegerList("effects.slots");
         InfuseEffect[] all=InfuseEffect.values();
-        for(int i=0;i<Math.min(slots.length,all.length);i++){
+        for(int i=0;i<Math.min(slots.size(),all.length);i++){
+            int slot=slots.get(i);if(slot<0||slot>=inv.getSize())continue;
             ItemStack item=effects.createEffectItem(all[i],false);
             ItemMeta meta=item.getItemMeta();meta.getPersistentDataContainer().set(menuKey,PersistentDataType.STRING,all[i].id());
             meta.setLore(List.of(ChatColor.GRAY+"Click to view the original S3 recipe",ChatColor.DARK_GRAY+"Regular and augmented variants"));
-            item.setItemMeta(meta);inv.setItem(slots[i],item);
+            item.setItemMeta(meta);inv.setItem(slot,item);
         }
-        inv.setItem(49,plain(Material.BARRIER,ChatColor.RED+"Close"));
+        set(inv,"effects.close-slot",49,plain(Material.BARRIER,ChatColor.RED+"Close"));
         player.openInventory(inv);
     }
     private void openRecipe(Player player,InfuseEffect effect){
-        MenuHolder holder=new MenuHolder();Inventory inv=Bukkit.createInventory(holder,45,ChatColor.DARK_AQUA+"Recipe • "+effect.displayName());holder.inventory=inv;
-        ItemStack filler=plain(Material.BLACK_STAINED_GLASS_PANE," ");for(int i=0;i<45;i++)inv.setItem(i,filler);
-        String[] materials=RecipeService.recipeIngredients(effect.id());int[] slots={10,11,12,19,20,21,28,29,30};
-        if(materials!=null)for(int i=0;i<9;i++){
-            Material material=Material.matchMaterial(materials[i]);
-            if(material!=null)inv.setItem(slots[i],new ItemStack(material));
+        MenuHolder holder=new MenuHolder();
+        int rows=Math.max(1,Math.min(6,gui.getInt("recipe.rows",5)));
+        Inventory inv=Bukkit.createInventory(holder,rows*9,color(gui.getString("recipe.title","&3Recipe • {effect}").replace("{effect}",effect.displayName())));
+        holder.inventory=inv;
+        ItemStack filler=plain(material("recipe.filler",Material.BLACK_STAINED_GLASS_PANE)," ");
+        for(int i=0;i<inv.getSize();i++)inv.setItem(i,filler);
+        String[] materials=RecipeService.recipeIngredients(effect.id());
+        List<Integer> slots=gui.getIntegerList("recipe.ingredient-slots");
+        if(materials!=null)for(int i=0;i<Math.min(9,slots.size());i++){
+            int slot=slots.get(i);if(slot<0||slot>=inv.getSize())continue;
+            Material mat=Material.matchMaterial(materials[i]);if(mat!=null)inv.setItem(slot,new ItemStack(mat));
         }
-        inv.setItem(24,effects.createEffectItem(effect,false));
-        inv.setItem(40,plain(Material.ARROW,ChatColor.YELLOW+"Back to effects"));
-        inv.setItem(44,plain(Material.BARRIER,ChatColor.RED+"Close"));
+        set(inv,"recipe.output-slot",24,effects.createEffectItem(effect,false));
+        set(inv,"recipe.back-slot",40,plain(Material.ARROW,ChatColor.YELLOW+"Back to effects"));
+        set(inv,"recipe.close-slot",44,plain(Material.BARRIER,ChatColor.RED+"Close"));
         player.openInventory(inv);
     }
     @EventHandler
@@ -64,7 +76,7 @@ public final class MenuService implements Listener {
         if(!(event.getWhoClicked() instanceof Player player))return;
         ItemStack clicked=event.getCurrentItem();if(clicked==null||!clicked.hasItemMeta())return;
         String title=event.getView().getTitle();
-        if(title.contains("Effects")){
+        if(title.toLowerCase().contains("effects")){
             String id=clicked.getItemMeta().getPersistentDataContainer().get(menuKey,PersistentDataType.STRING);
             if(id==null){if(clicked.getType()==Material.BARRIER)player.closeInventory();return;}
             InfuseEffect effect=InfuseEffect.fromId(id);if(effect!=null)openRecipe(player,effect);
@@ -73,9 +85,10 @@ public final class MenuService implements Listener {
             else if(clicked.getType()==Material.BARRIER)player.closeInventory();
         }
     }
-    private ItemStack plain(Material type,String name){
-        ItemStack item=new ItemStack(type);ItemMeta meta=item.getItemMeta();meta.setDisplayName(name);item.setItemMeta(meta);return item;
-    }
+    private void set(Inventory inv,String path,int fallback,ItemStack item){int slot=gui.getInt(path,fallback);if(slot>=0&&slot<inv.getSize())inv.setItem(slot,item);}
+    private Material material(String path,Material fallback){Material value=Material.matchMaterial(gui.getString(path,""));return value==null?fallback:value;}
+    private String color(String value){return ChatColor.translateAlternateColorCodes('&',value);}
+    private ItemStack plain(Material type,String name){ItemStack item=new ItemStack(type);ItemMeta meta=item.getItemMeta();meta.setDisplayName(name);item.setItemMeta(meta);return item;}
     private static final class MenuHolder implements InventoryHolder{
         private Inventory inventory;
         @Override public Inventory getInventory(){return inventory;}
