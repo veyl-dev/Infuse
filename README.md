@@ -1,100 +1,228 @@
 # InfuseSMP S3
 
-A standalone Java/Paper plugin port of the Infuse SMP Season 3 effect system, built in this repository as InfuseSMP-S3.
+**A Minecraft survival ability plugin built around collectible Infuse effects, powerful sparks, custom crafting, and augmented rituals.**
 
-## Build validation
+InfuseSMP S3 brings thirteen distinct effects into your server. Players can collect effect items, equip a primary and secondary ability, trigger their sparks, craft upgrades, and combine effects with combat, exploration, and progression.
 
-GitHub Actions builds two artifacts:
+> **Project status:** Active development. Features and configuration may change before the first stable release.
 
-| Target | Java | Paper API | CI |
-|---|---:|---|---|
-| Minecraft 1.21.x | 21 | 1.21.1 API line | Passed |
-| Minecraft 26.3 | 25 | 26.3 API line | Passed |
+## Features
 
-The build workflow uploads a separate JAR artifact for each target. Download the latest artifacts from the repository's Actions → Build workflow.
+### 13 unique Infuse effects
 
-## Implemented systems
+Each effect has its own passive behavior, spark ability, cooldown, duration, and augmented variant.
 
-- Thirteen S3 effect types: Emerald, Feather, Fire, Frost, Haste, Heart, Invisibility, Ocean, Regeneration, Speed, Strength, Thunder and Ender.
-- Primary and secondary equipped effect slots, regular and augmented potion items, persisted player data, cooldowns, charge counters and history.
-- Effect passives and sparks, including movement, combat, food/XP, potion, damage and projectile interactions.
-- Temporary Haste tool enchantments and Emerald Looting enchantments, with restoration of the player's original enchantment levels.
-- Feather fall protection, wind-charge interactions and landing attacks; Frost snow trails with throttled placement and automatic cleanup.
-- Fire arrows and lava movement; Ocean air drain and pull; Thunder chain lightning; Strength combat and shield interactions; Ender dragon-breath curse links and mob execution.
-- Configurable hit-counter decay and incoming/outgoing hit triggers.
-- Player trust lists with a maximum size and configurable action delay.
-- Primary/secondary spark key bindings (swap-hands and drop controls), plus /infuse bind.
-- /drain to return an equipped effect to an item, /swap, /trust, /activate, /recipes and /infuse administration commands.
-- Editable shaped recipes in recipes.yml, regular craft limits, augmented craft limits and protected brewing-stand rituals.
-- Ten-minute augmented rituals by default, with a one-hour Ender ritual, boss bar and optional beacon beam.
-- Effect and recipe guide inventories configured through gui.yml.
-- Configurable messages through messages.yml.
-- Disabled-world and coordinate-based disabled-region mapping.
-- Configurable effect drops on death.
-- Original S3 texture pack bundled and adapted for the detected server resource-pack format.
+| Effect | Theme |
+|---|---|
+| Emerald | Experience, loot, and mining bonuses |
+| Feather | Fall protection, wind bursts, and aerial attacks |
+| Fire | Fire-based combat, arrows, and lava interactions |
+| Frost | Freezing effects and temporary snow trails |
+| Haste | Faster breaking and temporary tool enchantments |
+| Heart | Health-focused passives and healing sparks |
+| Invisibility | Stealth and concealment |
+| Ocean | Water-based utility, air pressure, and pulling targets |
+| Regeneration | Healing and restorative effects |
+| Speed | Mobility and dash abilities |
+| Strength | Enhanced combat and shield interactions |
+| Thunder | Lightning strikes and chain damage |
+| Ender | Teleportation and linked curse effects |
+
+### Equipment and ability system
+
+- Equip one **primary** and one **secondary** effect.
+- Use regular or augmented Infuse items.
+- Activate each equipped effect's spark independently.
+- Configure spark controls to use swap-hands or drop.
+- Swap equipped slots or drain an effect back into an item.
+- Save player equipment, trust lists, controls, and effect history between restarts.
+- Configure cooldowns, durations, hit counters, and effect behavior.
+
+### Crafting and augmented rituals
+
+- Configure shaped crafting recipes in `recipes.yml`.
+- Set regular and augmented crafting limits for each effect.
+- Create augmented effects through brewing-stand rituals.
+- Track ritual progress with a boss bar.
+- Configure ritual duration, Ender ritual duration, beacon visuals, and brewing-stand protection.
+
+### Multiplayer and server controls
+
+- Player trust lists with configurable capacity and action delay.
+- Configurable incoming and outgoing hit-counter triggers.
+- Choose whether effects can drop on natural death.
+- Disable effects in selected worlds or configured coordinate regions.
+- Admin commands for checking, giving, equipping, and removing effects.
+- Reload supported configuration files without restarting the server.
+
+### Menus and customization
+
+- In-game effect and recipe guide menus.
+- Configure menu titles, sizes, slots, and filler items in `gui.yml`.
+- Customize messages and help text in `messages.yml` using MiniMessage formatting.
+- Tune gameplay behavior, cooldowns, durations, controls, and resource-pack delivery in `config.yml`.
+
+### Included resource pack
+
+The original S3 texture pack is bundled with the plugin and adapted for the detected Minecraft server version when the plugin starts. The generated ZIP is placed in:
+
+```
+plugins/InfuseSMP-S3/resourcepack/
+```
+
+The plugin can prompt players to download the pack when you provide a public HTTPS download URL and its SHA-1 hash. The plugin prepares the pack but does not host the file.
 
 ## Commands
 
-| Command | Purpose |
+### Player commands
+
+| Command | Description |
 |---|---|
-| /infuse gui | Open the effect and recipe guide |
-| /infuse effects | List effect types |
-| /infuse controls | Show spark bindings |
-| /infuse bind primary/secondary swap/drop | Change a spark binding |
-| /infuse get [player] | View equipped effects |
-| /infuse add [player] [slot] [effect] [augmented] | Admin equip |
-| /infuse remove [player] [slot] | Admin remove |
-| /infuse give [player] [effect] [augmented] | Give an effect item |
-| /activate primary/secondary | Activate a spark |
-| /drain primary/secondary | Drain an equipped effect |
-| /swap | Swap primary and secondary slots |
-| /trust add/remove/list/clear [player] | Manage trusted players |
-| /recipes | Open the recipe guide |
+| `/infuse help` | Show the command help |
+| `/infuse gui` | Open the Infuse effects guide |
+| `/infuse effects` | List all available effects |
+| `/infuse controls` | View your primary and secondary spark controls |
+| `/infuse bind <primary\|secondary> <swap\|drop>` | Change a spark activation control |
+| `/infuse get [player]` | View equipped effects |
+| `/activate <primary\|secondary>` | Activate an equipped spark |
+| `/drain <primary\|secondary>` | Return an equipped effect to an item |
+| `/swap` | Swap primary and secondary effects |
+| `/trust list` | View your trusted players |
+| `/trust add <player>` | Add a player to your trust list |
+| `/trust remove <player>` | Remove a player from your trust list |
+| `/trust clear` | Clear your trust list |
+| `/recipes` | Open the recipe guide |
+
+**Aliases:** `/infuse` also has the `/infusesmp` alias. `/activate` has `/a` and `/use` aliases.
+
+### Admin commands
+
+| Command | Description | Permission |
+|---|---|---|
+| `/infuse reload` | Reload supported configuration files | `infusesmp.reload` |
+| `/infuse add <player> <slot> <effect> [augmented]` | Equip an effect on a player's slot | `infusesmp.manage` |
+| `/infuse remove <player> <slot>` | Remove an effect from a player's slot | `infusesmp.manage` |
+| `/infuse give <player> <effect> [augmented]` | Give an Infuse effect item | `infusesmp.give` |
+
+For the `slot` argument, use `primary` or `secondary`. For the optional `augmented` argument, use `true` or `false`.
+
+## Permissions
+
+| Permission | Default | Purpose |
+|---|---|---|
+| `infusesmp.use` | Everyone | Basic plugin use |
+| `infusesmp.admin` | Operators | Parent permission for admin actions |
+| `infusesmp.reload` | Operators | Reload configuration |
+| `infusesmp.manage` | Operators | Equip and remove player effects |
+| `infusesmp.give` | Operators | Give effect items |
+
+The `infusesmp.admin` permission includes the reload, manage, and give permissions.
 
 ## Configuration files
 
-- config.yml — effect behavior, cooldowns, durations, world/region rules, controls, trust, death drops and resource-pack settings.
-- messages.yml — MiniMessage-formatted messages and help.
-- gui.yml — menu titles, sizes, slots and filler items.
-- recipes.yml — editable recipe shapes and ingredients.
-- players.yml — persisted player slots, trust lists, controls and history.
-- crafting.yml — persisted regular and augmented craft counters.
+The plugin creates and maintains these files in `plugins/InfuseSMP-S3/`:
 
-## Resource pack setup
+| File | Purpose |
+|---|---|
+| `config.yml` | Main gameplay settings, effects, cooldowns, durations, controls, disabled worlds/regions, trust settings, and resource-pack options |
+| `messages.yml` | Customizable player messages and help text |
+| `gui.yml` | Effect and recipe menu layouts, titles, slots, and filler items |
+| `recipes.yml` | Shaped crafting recipe layouts and ingredients |
+| `players.yml` | Automatically saved player data, equipped slots, controls, trust lists, and history |
+| `crafting.yml` | Automatically saved crafting counters and limits |
 
-The original texture pack is bundled in the plugin JAR as a Base64-encoded ZIP. On startup the plugin extracts a server-version-specific ZIP into:
+Custom Model Data identifiers are fixed internally and are not exposed as editable configuration options.
 
-plugins/InfuseSMP-S3/resourcepack/
+## Installation
 
-To automatically prompt clients, host the generated ZIP at a public HTTPS URL and set:
+1. Download the JAR built for your Minecraft server version.
+2. Stop your Paper server.
+3. Place the JAR in the server's `plugins` folder.
+4. Start the server and allow the plugin to generate its configuration files.
+5. Review `config.yml`, `messages.yml`, `gui.yml`, and `recipes.yml`.
+6. Restart the server or use `/infuse reload` after changing supported settings.
 
-    settings:
-      resource-pack:
-        enabled: true
-        url: "https://your-host/InfuseSMP-S3.zip"
-        sha1: "YOUR_40_CHARACTER_SHA1"
-        prompt: "&aDownload the Infuse SMP S3 resource pack."
+Use only the artifact that matches your server version.
 
-The plugin prepares the ZIP but does not host it. Check resourcepack/README.md for format details.
+## Resource pack delivery
 
-## Build locally
+To send the included resource pack to players automatically:
+
+1. Start the server once so the plugin generates the version-specific ZIP.
+2. Find the generated ZIP in `plugins/InfuseSMP-S3/resourcepack/`.
+3. Upload that ZIP to a public HTTPS file host.
+4. Calculate the SHA-1 hash of the exact uploaded ZIP.
+5. Edit the following settings in `config.yml`:
+
+```yaml
+settings:
+  resource-pack:
+    enabled: true
+    url: "https://your-host.example/InfuseSMP-S3.zip"
+    sha1: "YOUR_40_CHARACTER_SHA1"
+    prompt: "Install the InfuseSMP S3 resource pack for the complete experience."
+```
+
+6. Restart the server and test the download prompt with a client on your target Minecraft version.
+
+The plugin does not provide file hosting. The resource pack should be checked in-game on each supported client version before public distribution.
+
+## Compatibility and builds
+
+The project currently provides separate CI build targets:
+
+| Minecraft target | Java | Paper API target |
+|---|---:|---|
+| 1.21.x | 21 | 1.21.1 API line |
+| 26.3 | 25 | 26.3 API line |
+
+These targets are independently compiled by the GitHub Actions workflow. Use the matching artifact from the workflow's **Build** run.
+
+### Build from source
 
 For the 1.21 API line:
 
-    gradle clean build -PtargetJava=21 -PpaperApiVersion=1.21.1-R0.1-SNAPSHOT -PtargetApi=1.21
+```bash
+gradle clean build -PtargetJava=21 -PpaperApiVersion=1.21.1-R0.1-SNAPSHOT -PtargetApi=1.21
+```
 
 For Minecraft 26.3:
 
-    gradle clean build -PtargetJava=25 -PpaperApiVersion=26.3.build.+ -PtargetApi=26.3
+```bash
+gradle clean build -PtargetJava=25 -PpaperApiVersion=26.3.build.+ -PtargetApi=26.3
+```
 
-Output: build/libs/.
+The compiled JAR files are placed in `build/libs/`.
 
-## Verification scope and remaining QA
+## Development and testing
 
-Both target artifacts compile successfully in GitHub Actions. That is compile validation, not proof of every gameplay interaction on a live server. Before a public release, test both JARs on real Paper/Purpur servers, verify each recipe and ritual, inspect the texture pack in-client on both version families, and exercise all effects in PvP and PvE.
+InfuseSMP S3 is under active development. CI compilation confirms that the source builds against the configured API targets; it does not replace live gameplay testing.
 
-The conversion work in this repository has used the S3 effect definitions and the public PluginMart/Infuse repository as structural/behavior references. The original standalone Skript source file was not available in the repository or the accessible file library during this pass, so exact line-by-line parity against a separate Skript archive has not been certified. If a different Skript file is the authoritative source, add it to the repository for a final parity audit.
+Before a stable release, test the plugin on real Paper servers for each supported version, including:
 
-## Attribution
+- All thirteen effects, passives, sparks, cooldowns, and augmented variants.
+- Crafting recipes, crafting limits, brewing rituals, and ritual cancellation.
+- Player data saving and loading across server restarts.
+- PvP and PvE interactions, including damage, projectiles, death drops, and trust behavior.
+- GUI layouts, messages, and command permissions.
+- Resource-pack loading and the appearance of every custom item in-game.
 
-The original texture pack and its included attribution notices are preserved. PluginMart/Infuse is used as a structural reference; its source files are not copied into this repository.
+## Contributing and bug reports
+
+Bug reports and feature suggestions are welcome through the repository's [GitHub Issues](https://github.com/veyl-dev/Infuse/issues). When reporting a problem, include:
+
+- Minecraft server version and software (Paper or compatible fork).
+- Java version.
+- InfuseSMP S3 build or commit.
+- Steps to reproduce the issue.
+- Relevant server logs and configuration excerpts (remove private information).
+
+## Project links
+
+- **Source code:** [veyl-dev/Infuse](https://github.com/veyl-dev/Infuse)
+- **Issues and feature requests:** [GitHub Issues](https://github.com/veyl-dev/Infuse/issues)
+- **Build artifacts:** [GitHub Actions](https://github.com/veyl-dev/Infuse/actions)
+
+## Credits
+
+The original S3 resource pack and its included attribution notices are preserved in the project. The project also acknowledges PluginMart/Infuse as a reference for the plugin's structure and gameplay context.
