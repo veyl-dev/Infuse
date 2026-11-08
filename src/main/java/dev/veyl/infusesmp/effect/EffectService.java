@@ -12,6 +12,7 @@ import org.bukkit.util.Vector;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import java.util.List;
@@ -26,6 +27,22 @@ public final class EffectService {
     public PlayerData data(Player player){return store.get(player.getUniqueId());}
     public int effectCount(){return InfuseEffect.values().length;}
     public boolean hasEffect(Player player,String id){PlayerData d=data(player);return id.equals(d.primary())||id.equals(d.secondary());}
+    public boolean isEffectBlocked(Player player){return isEffectBlocked(player.getLocation());}
+    public boolean isEffectBlocked(org.bukkit.Location location){
+        if(plugin.getConfig().getStringList("settings.disabled-worlds").contains(location.getWorld().getName()))return true;
+        ConfigurationSection regions=plugin.getConfig().getConfigurationSection("regions.disabled");
+        if(regions==null)return false;
+        for(String name:regions.getKeys(false)){
+            ConfigurationSection region=regions.getConfigurationSection(name);if(region==null)continue;
+            if(!location.getWorld().getName().equals(region.getString("world","")))continue;
+            double minX=region.getDouble("min.x"),minY=region.getDouble("min.y"),minZ=region.getDouble("min.z");
+            double maxX=region.getDouble("max.x"),maxY=region.getDouble("max.y"),maxZ=region.getDouble("max.z");
+            if(location.getX()>=Math.min(minX,maxX)&&location.getX()<=Math.max(minX,maxX)
+                    &&location.getY()>=Math.min(minY,maxY)&&location.getY()<=Math.max(minY,maxY)
+                    &&location.getZ()>=Math.min(minZ,maxZ)&&location.getZ()<=Math.max(minZ,maxZ))return true;
+        }
+        return false;
+    }
     public ItemStack createEffectItem(InfuseEffect effect,boolean augmented){
         ItemStack item=new ItemStack(Material.POTION);PotionMeta meta=(PotionMeta)item.getItemMeta();
         if(meta!=null){
@@ -89,7 +106,7 @@ public final class EffectService {
         d.addHistory("remove:"+slot);applyPassive(player);
     }
     public void applyPassive(Player player){
-        if(plugin.getConfig().getStringList("settings.disabled-worlds").contains(player.getWorld().getName()))return;
+        if(isEffectBlocked(player))return;
         PlayerData d=data(player);
         applyBasicPassive(player,d.primary());
         applyBasicPassive(player,d.secondary());
@@ -129,6 +146,7 @@ public final class EffectService {
         }
     }
     public boolean activate(Player player,boolean primary){
+        if(isEffectBlocked(player))return false;
         PlayerData d=data(player);String id=primary?d.primary():d.secondary();if(id==null)return false;
         InfuseEffect effect=InfuseEffect.fromId(id);if(effect==null)return false;
         boolean augmented=primary?d.primaryAugmented():d.secondaryAugmented();
@@ -310,11 +328,12 @@ public final class EffectService {
     private List<Player> nearbyEnemies(Player source,double radius){
         List<Player> result=new java.util.ArrayList<>();
         for(Player target:nearbyPlayers(source,radius)){
-            if(!data(source).trusted().contains(target.getUniqueId())&&!data(target).trusted().contains(source.getUniqueId()))result.add(target);
+            if(!data(source).trusted().contains(target.getUniqueId())&&!data(target).trusted().contains(source.getUniqueId())&&!isEffectBlocked(target))result.add(target);
         }
         return result;
     }
     public void onCombatHit(Player attacker,LivingEntity victim,EntityDamageByEntityEvent event){
+        if(isEffectBlocked(attacker)||isEffectBlocked(victim.getLocation()))return;
         PlayerData d=data(attacker);
         if("strength".equals(d.primary())||"strength".equals(d.secondary())){
             double missing=Math.max(0,attacker.getMaxHealth()-attacker.getHealth());
