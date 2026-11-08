@@ -46,7 +46,11 @@ public final class MenuService implements Listener {
             int slot=slots.get(i);if(slot<0||slot>=inv.getSize())continue;
             ItemStack item=effects.createEffectItem(all[i],false);
             ItemMeta meta=item.getItemMeta();meta.getPersistentDataContainer().set(menuKey,PersistentDataType.STRING,all[i].id());
-            meta.setLore(List.of(ChatColor.GRAY+"Click to view the original S3 recipe",ChatColor.DARK_GRAY+"Regular and augmented variants"));
+            List<String> lore=meta.hasLore()&&meta.getLore()!=null?new java.util.ArrayList<>(meta.getLore()):new java.util.ArrayList<>();
+            lore.add("");
+            lore.add(ChatColor.GRAY+"Click to view the original S3 recipe");
+            lore.add(ChatColor.DARK_GRAY+"Regular and augmented variants");
+            meta.setLore(lore);
             item.setItemMeta(meta);inv.setItem(slot,item);
         }
         set(inv,"effects.close-slot",49,plain(Material.BARRIER,ChatColor.RED+"Close"));
