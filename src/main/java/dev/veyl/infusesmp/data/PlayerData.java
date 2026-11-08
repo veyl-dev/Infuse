@@ -9,11 +9,16 @@ public final class PlayerData {
     private final Map<String, Long> cooldowns = new HashMap<>();
     private final Deque<String> history = new ArrayDeque<>();
     private int chargePrimary, chargeSecondary;
+    private long lastTrustAction;
+    private String primaryControl="swap",secondaryControl="drop";
     public String primary(){return primary;} public String secondary(){return secondary;}
     public boolean primaryAugmented(){return primaryAugmented;} public boolean secondaryAugmented(){return secondaryAugmented;}
     public Set<UUID> trusted(){return trusted;} public Map<String,Long> cooldowns(){return cooldowns;}
     public Deque<String> history(){return history;}
     public int chargePrimary(){return chargePrimary;} public int chargeSecondary(){return chargeSecondary;}
+    public long lastTrustAction(){return lastTrustAction;} public void lastTrustAction(long value){lastTrustAction=value;}
+    public String primaryControl(){return primaryControl;} public String secondaryControl(){return secondaryControl;}
+    public void control(boolean primary,String value){if(primary)primaryControl=value;else secondaryControl=value;}
     public void primary(String id, boolean aug){primary=id;primaryAugmented=aug;}
     public void secondary(String id, boolean aug){secondary=id;secondaryAugmented=aug;}
     public void charge(boolean primarySlot,int value){if(primarySlot)chargePrimary=value;else chargeSecondary=value;}
