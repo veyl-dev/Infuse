@@ -186,31 +186,40 @@ public final class EffectService {
         }
         return result;
     }
-    public void onCombatHit(Player attacker){
-        PlayerData d=data(attacker);charge(attacker,d,true);charge(attacker,d,false);
+    public void onCombatHit(Player attacker,Player victim){
+        processHit(attacker,victim,true);
+        processHit(attacker,victim,false);
     }
-    private void charge(Player p,PlayerData d,boolean primary){
-        String id=primary?d.primary():d.secondary();if(id==null)return;
-        int value=Math.min(5,(primary?d.chargePrimary():d.chargeSecondary())+1);d.charge(primary,value);
-        if(value==5)p.sendActionBar(ChatColor.GREEN+(primary?"Primary":"Secondary")+" spark fully charged!");
-    }
-    public boolean consumeEffectItem(Player player, ItemStack item) {
-        if (!isEffectItem(item)) return false;
-        String raw = item.getItemMeta().getPersistentDataContainer().get(itemKey, PersistentDataType.STRING);
-        if (raw == null) return false;
-        boolean augmented = raw.endsWith(":augmented");
-        String id = augmented ? raw.substring(0, raw.length() - 10) : raw;
-        InfuseEffect effect = InfuseEffect.fromId(id);
-        if (effect == null) return false;
-        PlayerData d = data(player);
-        String slot = d.primary() == null ? "primary" : d.secondary() == null ? "secondary" : null;
-        if (slot == null) {
-            player.sendMessage(ChatColor.RED + "Both Infuse slots are occupied. Drain or remove an effect first.");
-            return false;
+    private void processHit(Player attacker,Player victim,boolean primary){
+        PlayerData d=data(attacker);
+        String id=primary?d.primary():d.secondary();
+        if(id==null)return;
+        int threshold=plugin.getConfig().getInt("effect-settings."+id+".trigger-hits",0);
+        if(threshold<=0)return;
+        int charge=(primary?d.chargePrimary():d.chargeSecondary())+1;
+        if(charge<threshold){
+            d.charge(primary,charge);
+            attacker.sendActionBar(ChatColor.YELLOW+(primary?"Primary":"Secondary")+" charge: "+charge+"/"+threshold);
+            return;
         }
-        equip(player, slot, effect, augmented);
-        player.sendMessage(ChatColor.GREEN + "Equipped " + effect.displayName() + " in your " + slot + " slot.");
-        return true;
+        d.charge(primary,0);
+        switch(id){
+            case "fire" -> victim.setFireTicks(Math.max(victim.getFireTicks(),plugin.getConfig().getInt("effect-settings.fire.ignite-ticks",100)));
+            case "thunder" -> {
+                victim.getWorld().strikeLightningEffect(victim.getLocation());
+                victim.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",1.0),attacker);
+            }
+            case "frost" -> {
+                victim.setFreezeTicks(Math.max(victim.getFreezeTicks(),200));
+                victim.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE,200,1));
+            }
+            case "invisibility" -> victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,plugin.getConfig().getInt("effect-settings.invisibility.blindness-duration-seconds",10)*20,0));
+            case "regeneration" -> attacker.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,60,1));
+            case "emerald" -> attacker.giveExp(plugin.getConfig().getInt("effect-settings.emerald.xp-gain",1));
+            case "feather" -> attacker.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING,100,0));
+            default -> { }
+        }
+        attacker.sendActionBar(ChatColor.GREEN+(primary?"Primary":"Secondary")+" effect triggered!");
     }
     public NamespacedKey itemKey(){return itemKey;}
 }
