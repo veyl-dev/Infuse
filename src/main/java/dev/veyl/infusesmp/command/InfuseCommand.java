@@ -39,12 +39,13 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
     private boolean infuse(CommandSender sender,String[] args){
         if(args.length==0||args[0].equalsIgnoreCase("help")){
             sender.sendMessage(ChatColor.GREEN+"InfuseSMP S3");
-            sender.sendMessage(ChatColor.GRAY+"/infuse effects | get [player] | add <player> <slot> <effect> [augmented]");
+            sender.sendMessage(ChatColor.GRAY+"/infuse gui | effects | get [player] | add <player> <slot> <effect> [augmented]");
             sender.sendMessage(ChatColor.GRAY+"/infuse remove <player> <slot> | give <player> <effect> [augmented] | reload");
             return true;
         }
         switch(args[0].toLowerCase(Locale.ROOT)){
             case "effects" -> sender.sendMessage(ChatColor.GREEN+"Effects: "+String.join(", ",Arrays.stream(InfuseEffect.values()).map(InfuseEffect::id).toList()));
+            case "gui" -> { if(sender instanceof Player player)plugin.menus().openEffects(player); else sender.sendMessage("Players only."); }
             case "reload" -> {
                 if(!sender.hasPermission("infusesmp.reload"))return deny(sender);
                 plugin.reloadConfig();sender.sendMessage(ChatColor.GREEN+"InfuseSMP S3 configuration reloaded.");
@@ -107,7 +108,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         if(c.getName().equalsIgnoreCase("activate"))return args.length==1?List.of("primary","secondary"):List.of();
         if(c.getName().equalsIgnoreCase("trust"))return args.length==1?List.of("add","remove","list","clear"):args.length==2?Bukkit.getOnlinePlayers().stream().map(Player::getName).toList():List.of();
         if(c.getName().equalsIgnoreCase("infuse")){
-            if(args.length==1)return List.of("help","effects","get","add","remove","give","reload");
+            if(args.length==1)return List.of("help","gui","effects","get","add","remove","give","reload");
             if(args.length==2&&List.of("get","add","remove","give").contains(args[0]))return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
             if(args.length==3&&List.of("add","remove").contains(args[0]))return List.of("primary","secondary");
             if(args.length==4&&args[0].equalsIgnoreCase("add"))return Arrays.stream(InfuseEffect.values()).map(InfuseEffect::id).toList();
