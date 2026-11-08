@@ -5,6 +5,8 @@ import dev.veyl.infusesmp.data.PlayerData;
 import dev.veyl.infusesmp.data.PlayerDataStore;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +25,7 @@ public final class EffectService {
     }
     public PlayerData data(Player player){return store.get(player.getUniqueId());}
     public int effectCount(){return InfuseEffect.values().length;}
+    public boolean hasEffect(Player player,String id){PlayerData d=data(player);return id.equals(d.primary())||id.equals(d.secondary());}
     public ItemStack createEffectItem(InfuseEffect effect,boolean augmented){
         ItemStack item=new ItemStack(Material.POTION);PotionMeta meta=(PotionMeta)item.getItemMeta();
         if(meta!=null){
@@ -310,6 +313,17 @@ public final class EffectService {
             if(!data(source).trusted().contains(target.getUniqueId())&&!data(target).trusted().contains(source.getUniqueId()))result.add(target);
         }
         return result;
+    }
+    public void onCombatHit(Player attacker,LivingEntity victim,EntityDamageByEntityEvent event){
+        PlayerData d=data(attacker);
+        if("strength".equals(d.primary())||"strength".equals(d.secondary())){
+            double missing=Math.max(0,attacker.getMaxHealth()-attacker.getHealth());
+            double damage=event.getDamage()+missing*0.3;
+            if(!(victim instanceof Player))damage*=2.0;
+            event.setDamage(damage);
+        }
+        if(!(victim instanceof Player)&&isSparkActive(attacker,"ender"))victim.setHealth(0.0);
+        if(victim instanceof Player target)onCombatHit(attacker,target);
     }
     public void onCombatHit(Player attacker,Player victim){
         processHit(attacker,victim,true);
