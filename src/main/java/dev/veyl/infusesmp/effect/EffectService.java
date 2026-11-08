@@ -442,9 +442,12 @@ public final class EffectService {
         if(!(victim instanceof Player)&&isSparkActive(attacker,"ender"))victim.setHealth(0.0);
         if(victim instanceof Player defender){
             PlayerData taken=data(defender);
-            int hits=taken.chargeTaken()+1;
+            long now=System.currentTimeMillis();
+            long decay=plugin.getConfig().getLong("settings.hit-counter-decay-seconds",15)*1000L;
+            long lastTaken=taken.cooldowns().getOrDefault("last-hit-taken",0L);
+            int hits=(now-lastTaken>decay?0:taken.chargeTaken())+1;
             if(hits>=10){
-                taken.chargeTaken(0);
+                taken.chargeTaken(0);taken.cooldowns().remove("last-hit-taken");
                 if(hasEffect(defender,"feather")){
                     attacker.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING,100,2));
                     defender.setVelocity(new Vector(0,.5,0));
@@ -454,7 +457,7 @@ public final class EffectService {
                     if(direction.lengthSquared()>.001)charge.setVelocity(direction.normalize());
                 }
                 if(hasEffect(defender,"emerald"))data(attacker).cooldowns().put("emerald-lock",System.currentTimeMillis()+plugin.getConfig().getLong("effect-settings.emerald.lock-duration-seconds",10)*1000L);
-            }else taken.chargeTaken(hits);
+            }else {taken.chargeTaken(hits);taken.cooldowns().put("last-hit-taken",now);}
             onCombatHit(attacker,defender);
         }
     }
@@ -468,13 +471,17 @@ public final class EffectService {
         if(id==null)return;
         int threshold=plugin.getConfig().getInt("effect-settings."+id+".trigger-hits",0);
         if(threshold<=0)return;
-        int charge=(primary?d.chargePrimary():d.chargeSecondary())+1;
+        long now=System.currentTimeMillis();
+        String hitTimeKey="last-hit:"+(primary?"primary":"secondary");
+        long decay=plugin.getConfig().getLong("settings.hit-counter-decay-seconds",15)*1000L;
+        int previous=(now-d.cooldowns().getOrDefault(hitTimeKey,0L)>decay)?0:(primary?d.chargePrimary():d.chargeSecondary());
+        int charge=previous+1;
         if(charge<threshold){
-            d.charge(primary,charge);
+            d.charge(primary,charge);d.cooldowns().put(hitTimeKey,now);
             attacker.sendActionBar(ChatColor.YELLOW+(primary?"Primary":"Secondary")+" charge: "+charge+"/"+threshold);
             return;
         }
-        d.charge(primary,0);
+        d.charge(primary,0);d.cooldowns().remove(hitTimeKey);
         switch(id){
             case "fire" -> victim.setFireTicks(Math.max(victim.getFireTicks(),plugin.getConfig().getInt("effect-settings.fire.ignite-ticks",100)));
             case "thunder" -> {
