@@ -371,7 +371,7 @@ public final class EffectService {
                             int hits=strikes.getOrDefault(target.getUniqueId(),0);
                             if(hits>=plugin.getConfig().getInt("effect-settings.thunder.strikes-per-player",3))continue;
                             target.getWorld().strikeLightningEffect(target.getLocation());
-                            target.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0),p);
+                            thunderDamage(target,p,plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0));
                             strikes.put(target.getUniqueId(),hits+1);
                         }
                         elapsed+=20;
@@ -385,6 +385,11 @@ public final class EffectService {
         PlayerData d=data(player);
         long now=System.currentTimeMillis();
         return d.cooldowns().entrySet().stream().anyMatch(e->e.getKey().endsWith(":"+id)&&e.getKey().startsWith("active:")&&e.getValue()>now);
+    }
+    public void thunderDamage(LivingEntity target,Player attacker,double amount){
+        if(plugin.getConfig().getBoolean("settings.allow-true-damage",true))
+            target.setHealth(Math.max(0.0,target.getHealth()-Math.max(0.0,amount)));
+        else target.damage(amount,attacker);
     }
     private List<Player> nearbyPlayers(Player source,double radius){
         List<Player> result=new java.util.ArrayList<>();
@@ -482,7 +487,7 @@ public final class EffectService {
             if(next==null)return;
             hit.add(next.getUniqueId());
             next.getWorld().strikeLightningEffect(next.getLocation());
-            next.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0),owner);
+            thunderDamage(next,owner,plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0));
             chainLightning(owner,next,hit,depth+1);
         },delay);
     }
