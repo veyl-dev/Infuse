@@ -18,3 +18,18 @@ recipes:
     speed: 31
     strength: 32
     thunder: 40
+
+effects:
+  title: "&3InfuseSMP S3 • Effects"
+  rows: 6
+  slots: [10, 12, 14, 16, 19, 21, 23, 25, 28, 30, 32, 34, 40]
+  close-slot: 49
+  filler: GRAY_STAINED_GLASS_PANE
+recipe:
+  title: "&3Recipe • {effect}"
+  rows: 5
+  ingredient-slots: [10, 11, 12, 19, 20, 21, 28, 29, 30]
+  output-slot: 24
+  back-slot: 40
+  close-slot: 44
+  filler: BLACK_STAINED_GLASS_PANE
