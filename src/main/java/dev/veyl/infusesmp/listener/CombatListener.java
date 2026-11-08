@@ -11,6 +11,6 @@ public final class CombatListener implements Listener {
     public CombatListener(EffectService effects){this.effects=effects;}
     @EventHandler(ignoreCancelled=true)
     public void onPlayerDamage(EntityDamageByEntityEvent event){
-        if(event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player)effects.onCombatHit(attacker,victim);
+        if(event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player victim)effects.onCombatHit(attacker,victim);
     }
 }
