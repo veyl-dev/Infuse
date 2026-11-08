@@ -59,7 +59,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
             case "gui" -> { if(sender instanceof Player player)plugin.menus().openEffects(player); else sender.sendMessage("Players only."); }
             case "reload" -> {
                 if(!sender.hasPermission("infusesmp.reload"))return deny(sender);
-                plugin.reloadConfig();sender.sendMessage(ChatColor.GREEN+"InfuseSMP S3 configuration reloaded.");
+                plugin.reloadConfig();plugin.messages().reload();plugin.menus().reload();sender.sendMessage(ChatColor.GREEN+"InfuseSMP S3 configuration reloaded.");
             }
             case "get" -> {
                 Player target=args.length>1?Bukkit.getPlayerExact(args[1]):sender instanceof Player p?p:null;
@@ -138,7 +138,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         if(remaining>0){player.sendMessage(ChatColor.RED+"Wait "+((remaining+999)/1000)+"s before changing your trust list again.");return false;}
         return true;
     }
-    private boolean deny(CommandSender s){s.sendMessage(ChatColor.RED+"You do not have permission.");return true;}
+    private boolean deny(CommandSender s){plugin.messages().send(s,"no-permission");return true;}
     private String value(String s){return s==null?"None":s;}
     @Override public List<String> onTabComplete(CommandSender s,Command c,String a,String[] args){
         if(c.getName().equalsIgnoreCase("activate"))return args.length==1?List.of("primary","secondary"):List.of();
