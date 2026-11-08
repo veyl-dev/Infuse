@@ -41,6 +41,18 @@ public final class RecipeService implements Listener {
         recipes=YamlConfiguration.loadConfiguration(recipeFile);
         registerRecipes();
     }
+    public Material resolveMaterial(String name){
+        if(name==null)return null;
+        Material material=Material.matchMaterial(name);
+        if(material!=null)return material;
+        String fallback=switch(name){
+            case "FLOW_ARMOR_TRIM_SMITHING_TEMPLATE" -> "SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE";
+            case "BOLT_ARMOR_TRIM_SMITHING_TEMPLATE" -> "VEX_ARMOR_TRIM_SMITHING_TEMPLATE";
+            case "MUSIC_DISC_CREATOR_MUSIC_BOX" -> "MUSIC_DISC_CREATOR";
+            default -> null;
+        };
+        return fallback==null?null:Material.matchMaterial(fallback);
+    }
     public String[] recipeIngredients(String id){
         String base=id;
         List<String> shape=recipes.getStringList(base+".shape");
@@ -77,7 +89,7 @@ public final class RecipeService implements Listener {
                 String symbol=String.valueOf(shape.get(row).charAt(col));
                 if(symbol.equals(" ")){index++;continue;}
                 String name=ingredients.getString(symbol);
-                Material material=name==null?null:Material.matchMaterial(name);
+                Material material=resolveMaterial(name);
                 if(material==null){valid=false;plugin.getLogger().warning("Invalid ingredient '"+name+"' in "+recipeId); }
                 materials[index++]=material;
             }
@@ -89,7 +101,7 @@ public final class RecipeService implements Listener {
             recipe.shape(shape.toArray(String[]::new));
             for(String symbol:ingredients.getKeys(false)){
                 String materialName=ingredients.getString(symbol);
-                Material material=materialName==null?null:Material.matchMaterial(materialName);
+                Material material=resolveMaterial(materialName);
                 if(material!=null&&!symbol.isEmpty())recipe.setIngredient(symbol.charAt(0),material);
             }
             if(plugin.getServer().addRecipe(recipe))count++;
