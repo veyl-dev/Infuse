@@ -1,0 +1,106 @@
+# InfuseSMP S3 shaped crafting recipes.
+# Augmented variants use aug_<effect-id>; if omitted, the regular pattern is reused.
+emerald:
+  shape: ["WSW", "OEO", "CTC"]
+  ingredients:
+    W: WILD_ARMOR_TRIM_SMITHING_TEMPLATE
+    S: SNIFFER_EGG
+    O: OMINOUS_BOTTLE
+    E: EMERALD_BLOCK
+    C: ENDER_CHEST
+    T: ENCHANTING_TABLE
+feather:
+  shape: ["BPB", "FHF", "BPB"]
+  ingredients:
+    B: BREEZE_ROD
+    P: PHANTOM_MEMBRANE
+    F: FEATHER
+    H: HEAVY_CORE
+fire:
+  shape: ["URU", "NPN", "URU"]
+  ingredients:
+    U: NETHERITE_UPGRADE_SMITHING_TEMPLATE
+    R: RESPAWN_ANCHOR
+    N: NETHERITE_INGOT
+    P: MUSIC_DISC_PIGSTEP
+frost:
+  shape: ["TPT", "HDH", "TPT"]
+  ingredients:
+    T: FLOW_ARMOR_TRIM_SMITHING_TEMPLATE
+    P: PEARLESCENT_FROGLIGHT
+    H: GOAT_HORN
+    D: MUSIC_DISC_CREATOR
+haste:
+  shape: ["DBD", "GEG", "DND"]
+  ingredients:
+    D: DIAMOND_BLOCK
+    B: BEACON
+    G: GOLD_BLOCK
+    E: DEEPSLATE_EMERALD_ORE
+    N: NETHERITE_PICKAXE
+heart:
+  shape: ["PTP", "EBE", "PTP"]
+  ingredients:
+    P: POTION
+    T: TOTEM_OF_UNDYING
+    E: ENCHANTED_GOLDEN_APPLE
+    B: BEETROOT
+invisibility:
+  shape: ["EME", "SOS", "ERE"]
+  ingredients:
+    E: ENDER_EYE
+    M: MUSIC_DISC_5
+    S: SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE
+    O: OMINOUS_TRIAL_KEY
+    R: RECOVERY_COMPASS
+ocean:
+  shape: ["EHE", "TCT", "EHE"]
+  ingredients:
+    E: TIDE_ARMOR_TRIM_SMITHING_TEMPLATE
+    H: HEART_OF_THE_SEA
+    T: TRIDENT
+    C: CONDUIT
+regeneration:
+  shape: ["EHE", "PAP", "EME"]
+  ingredients:
+    E: END_CRYSTAL
+    H: HONEY_BLOCK
+    P: PEARLESCENT_FROGLIGHT
+    A: AXOLOTL_BUCKET
+    M: MUSIC_DISC_CREATOR_MUSIC_BOX
+speed:
+  shape: ["RSR", "DHE", "RNR"]
+  ingredients:
+    R: RABBIT_FOOT
+    S: SADDLE
+    D: DUNE_ARMOR_TRIM_SMITHING_TEMPLATE
+    H: DIAMOND_HORSE_ARMOR
+    E: EYE_ARMOR_TRIM_SMITHING_TEMPLATE
+    N: NETHERITE_BOOTS
+strength:
+  shape: ["PRP", "SWA", "PRP"]
+  ingredients:
+    P: PLAYER_HEAD
+    R: RIB_ARMOR_TRIM_SMITHING_TEMPLATE
+    S: NETHERITE_SWORD
+    W: WITHER_ROSE
+    A: NETHERITE_AXE
+thunder:
+  shape: ["BLB", "TCT", "BLB"]
+  ingredients:
+    B: BOLT_ARMOR_TRIM_SMITHING_TEMPLATE
+    L: LODESTONE
+    T: TRIDENT
+    C: CREEPER_HEAD
+ender:
+  shape: ["RAR", "AEA", "RAR"]
+  ingredients:
+    R: DRAGON_HEAD
+    A: SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE
+    E: ENDER_EYE
+aug_ender:
+  shape: ["RAR", "APA", "RAR"]
+  ingredients:
+    R: DRAGON_HEAD
+    A: SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE
+    P: DRAGON_EGG
