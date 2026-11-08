@@ -110,6 +110,14 @@ public final class EffectService {
         PlayerData d=data(player);
         applyBasicPassive(player,d.primary());
         applyBasicPassive(player,d.secondary());
+        if("ocean".equals(d.primary())||"ocean".equals(d.secondary())){
+            int airDrain=plugin.getConfig().getInt("effect-settings.ocean.passive-air-drain",5);
+            double radius=plugin.getConfig().getDouble("effect-settings.ocean.passive-radius",8);
+            for(Player target:nearbyEnemies(player,radius)){
+                int air=Math.max(-20,target.getRemainingAir()-airDrain);target.setRemainingAir(air);
+                if(air<=0)target.damage(plugin.getConfig().getDouble("effect-settings.ocean.passive-damage",1.0),player);
+            }
+        }
         if("ender".equals(d.primary())||"ender".equals(d.secondary())){
             double radius=plugin.getConfig().getDouble("effect-settings.ender.passive-radius",10);
             for(Player target:nearbyPlayers(player,radius)){
