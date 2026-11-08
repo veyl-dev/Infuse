@@ -22,10 +22,11 @@ import java.util.List;
 public final class EffectService {
     private final InfuseSMP plugin;
     private final PlayerDataStore store;
-    private final NamespacedKey itemKey;
+    private final NamespacedKey itemKey,enderCurseKey,enderCurseSourceKey;
     private final NamespacedKey hasteFortuneKey,hasteEfficiencyKey,hasteUnbreakingKey,emeraldLootingKey;
     public EffectService(InfuseSMP plugin,PlayerDataStore store){
         this.plugin=plugin;this.store=store;this.itemKey=new NamespacedKey(plugin,"infuse_effect");
+        this.enderCurseKey=new NamespacedKey(plugin,"ender_curse_until");this.enderCurseSourceKey=new NamespacedKey(plugin,"ender_curse_source");
         this.hasteFortuneKey=new NamespacedKey(plugin,"haste_original_fortune");this.hasteEfficiencyKey=new NamespacedKey(plugin,"haste_original_efficiency");
         this.hasteUnbreakingKey=new NamespacedKey(plugin,"haste_original_unbreaking");this.emeraldLootingKey=new NamespacedKey(plugin,"emerald_original_looting");
     }
@@ -385,6 +386,27 @@ public final class EffectService {
         PlayerData d=data(player);
         long now=System.currentTimeMillis();
         return d.cooldowns().entrySet().stream().anyMatch(e->e.getKey().endsWith(":"+id)&&e.getKey().startsWith("active:")&&e.getValue()>now);
+    }
+    public void applyEnderCurse(Player target,Player source){
+        long expiry=System.currentTimeMillis()+plugin.getConfig().getLong("effect-settings.ender.curse-duration-seconds",10)*1000L;
+        target.getPersistentDataContainer().set(enderCurseKey,PersistentDataType.LONG,expiry);
+        target.getPersistentDataContainer().set(enderCurseSourceKey,PersistentDataType.STRING,source.getUniqueId().toString());
+        target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING,plugin.getConfig().getInt("effect-settings.ender.curse-duration-seconds",10)*20,0));
+        target.addPotionEffect(new PotionEffect(PotionEffectType.WITHER,plugin.getConfig().getInt("effect-settings.ender.curse-duration-seconds",10)*20,0));
+    }
+    public void shareEnderCurseDamage(Player victim,double damage){
+        var pdc=victim.getPersistentDataContainer();
+        long expiry=pdc.getOrDefault(enderCurseKey,PersistentDataType.LONG,0L);
+        if(expiry<=System.currentTimeMillis()){pdc.remove(enderCurseKey);pdc.remove(enderCurseSourceKey);return;}
+        String source=pdc.get(enderCurseSourceKey,PersistentDataType.STRING);if(source==null)return;
+        double share=plugin.getConfig().getDouble("effect-settings.ender.curse-damage-share",0.5);
+        for(Player cursed:plugin.getServer().getOnlinePlayers()){
+            if(cursed.equals(victim))continue;
+            long otherExpiry=cursed.getPersistentDataContainer().getOrDefault(enderCurseKey,PersistentDataType.LONG,0L);
+            String otherSource=cursed.getPersistentDataContainer().get(enderCurseSourceKey,PersistentDataType.STRING);
+            if(otherExpiry>System.currentTimeMillis()&&source.equals(otherSource))
+                cursed.setHealth(Math.max(0.0,cursed.getHealth()-damage*share));
+        }
     }
     public void thunderDamage(LivingEntity target,Player attacker,double amount){
         if(plugin.getConfig().getBoolean("settings.allow-true-damage",true))
