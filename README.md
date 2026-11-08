@@ -1,57 +1,100 @@
 # InfuseSMP S3
 
-Standalone Java/Paper plugin conversion of the supplied Infuse SMP Season 3 Skript project.
+A standalone Java/Paper plugin port of the Infuse SMP Season 3 effect system, built in this repository as InfuseSMP-S3.
 
-## Current conversion status
+## Build validation
 
-The repository now contains a Java plugin foundation with:
-- Paper build targets for the 1.21.x API line and the 26.3 API line.
-- Persistent primary/secondary player effect slots, trusted-player UUIDs, cooldowns, and history.
-- Thirteen S3 effect definitions and color-tinted custom potion items using the original S3 model-data IDs.
-- Drinking a custom effect bottle equips it in the next available slot.
-- Basic spark actions for all effect types, plus initial hit-trigger behavior for Fire, Thunder, Frost, Invisibility, Regeneration, Emerald, and Feather.
-- Original S3 shaped recipes, craft limits, and augmented-effect counters.
-- A bundled copy of the supplied original texture pack, adapted at startup for the detected Minecraft resource-pack format and item-model era.
-- Config files separated into config.yml, messages.yml, and gui.yml.
-- GitHub Actions build matrix for Java 21 / Paper 1.21 and Java 25 / Paper 26.3.
+GitHub Actions builds two artifacts:
 
-**This is still an active conversion, not a feature-complete release.** The 10-minute augmented rituals, full original passive mechanics, all projectile and damage listeners, trust-delay behavior, GUI screens, bind/control system, drain commands, region mapping, and complete animation parity still need implementation and testing.
+| Target | Java | Paper API | CI |
+|---|---:|---|---|
+| Minecraft 1.21.x | 21 | 1.21.1 API line | Passed |
+| Minecraft 26.3 | 25 | 26.3 API line | Passed |
 
-## Target platform
+The build workflow uploads a separate JAR artifact for each target. Download the latest artifacts from the repository's Actions → Build workflow.
 
-- Paper and compatible forks such as Purpur.
-- Target: Minecraft 1.21.x through 26.3.
-- Java 21 is required for the 1.21 line; Java 25 is required by Minecraft 26.x.
-- Separate build artifacts are generated for the legacy and modern API lines. Each artifact must pass CI and real-server checks before being marked tested.
+## Implemented systems
 
-## Build
+- Thirteen S3 effect types: Emerald, Feather, Fire, Frost, Haste, Heart, Invisibility, Ocean, Regeneration, Speed, Strength, Thunder and Ender.
+- Primary and secondary equipped effect slots, regular and augmented potion items, persisted player data, cooldowns, charge counters and history.
+- Effect passives and sparks, including movement, combat, food/XP, potion, damage and projectile interactions.
+- Temporary Haste tool enchantments and Emerald Looting enchantments, with restoration of the player's original enchantment levels.
+- Feather fall protection, wind-charge interactions and landing attacks; Frost snow trails with throttled placement and automatic cleanup.
+- Fire arrows and lava movement; Ocean air drain and pull; Thunder chain lightning; Strength combat and shield interactions; Ender dragon-breath curse links and mob execution.
+- Configurable hit-counter decay and incoming/outgoing hit triggers.
+- Player trust lists with a maximum size and configurable action delay.
+- Primary/secondary spark key bindings (swap-hands and drop controls), plus /infuse bind.
+- /drain to return an equipped effect to an item, /swap, /trust, /activate, /recipes and /infuse administration commands.
+- Editable shaped recipes in recipes.yml, regular craft limits, augmented craft limits and protected brewing-stand rituals.
+- Ten-minute augmented rituals by default, with a one-hour Ender ritual, boss bar and optional beacon beam.
+- Effect and recipe guide inventories configured through gui.yml.
+- Configurable messages through messages.yml.
+- Disabled-world and coordinate-based disabled-region mapping.
+- Configurable effect drops on death.
+- Original S3 texture pack bundled and adapted for the detected server resource-pack format.
 
-Install the JDK matching the target and Gradle 9.2.1+, then run:
+## Commands
+
+| Command | Purpose |
+|---|---|
+| /infuse gui | Open the effect and recipe guide |
+| /infuse effects | List effect types |
+| /infuse controls | Show spark bindings |
+| /infuse bind primary/secondary swap/drop | Change a spark binding |
+| /infuse get [player] | View equipped effects |
+| /infuse add [player] [slot] [effect] [augmented] | Admin equip |
+| /infuse remove [player] [slot] | Admin remove |
+| /infuse give [player] [effect] [augmented] | Give an effect item |
+| /activate primary/secondary | Activate a spark |
+| /drain primary/secondary | Drain an equipped effect |
+| /swap | Swap primary and secondary slots |
+| /trust add/remove/list/clear [player] | Manage trusted players |
+| /recipes | Open the recipe guide |
+
+## Configuration files
+
+- config.yml — effect behavior, cooldowns, durations, world/region rules, controls, trust, death drops and resource-pack settings.
+- messages.yml — MiniMessage-formatted messages and help.
+- gui.yml — menu titles, sizes, slots and filler items.
+- recipes.yml — editable recipe shapes and ingredients.
+- players.yml — persisted player slots, trust lists, controls and history.
+- crafting.yml — persisted regular and augmented craft counters.
+
+## Resource pack setup
+
+The original texture pack is bundled in the plugin JAR as a Base64-encoded ZIP. On startup the plugin extracts a server-version-specific ZIP into:
+
+plugins/InfuseSMP-S3/resourcepack/
+
+To automatically prompt clients, host the generated ZIP at a public HTTPS URL and set:
+
+    settings:
+      resource-pack:
+        enabled: true
+        url: "https://your-host/InfuseSMP-S3.zip"
+        sha1: "YOUR_40_CHARACTER_SHA1"
+        prompt: "&aDownload the Infuse SMP S3 resource pack."
+
+The plugin prepares the ZIP but does not host it. Check resourcepack/README.md for format details.
+
+## Build locally
+
+For the 1.21 API line:
 
     gradle clean build -PtargetJava=21 -PpaperApiVersion=1.21.1-R0.1-SNAPSHOT -PtargetApi=1.21
 
-For the modern build:
+For Minecraft 26.3:
 
     gradle clean build -PtargetJava=25 -PpaperApiVersion=26.3.build.+ -PtargetApi=26.3
 
-The jar is generated in build/libs/.
+Output: build/libs/.
 
-## Configuration
+## Verification scope and remaining QA
 
-- config.yml: gameplay values, effect limits, cooldowns, and resource-pack settings.
-- messages.yml: message templates.
-- gui.yml: inventory GUI layout and slots.
-- players.yml: player effect slots and trusted-player data.
-- crafting.yml: global craft counters.
+Both target artifacts compile successfully in GitHub Actions. That is compile validation, not proof of every gameplay interaction on a live server. Before a public release, test both JARs on real Paper/Purpur servers, verify each recipe and ritual, inspect the texture pack in-client on both version families, and exercise all effects in PvP and PvE.
 
-## Resource pack
+The conversion work in this repository has used the S3 effect definitions and the public PluginMart/Infuse repository as structural/behavior references. The original standalone Skript source file was not available in the repository or the accessible file library during this pass, so exact line-by-line parity against a separate Skript archive has not been certified. If a different Skript file is the authoritative source, add it to the repository for a final parity audit.
 
-The original pack is bundled and a server-version-specific ZIP is generated in plugins/InfuseSMP-S3/resourcepack/. See resourcepack/README.md. To prompt clients automatically, host that ZIP at a public URL and set settings.resource-pack.enabled, url, and sha1 in config.yml.
+## Attribution
 
-## Effects
-
-Emerald, Feather, Fire, Frost, Haste, Heart, Invisibility, Ocean, Regeneration, Speed, Strength, Thunder, and Ender.
-
-## Reference and attribution
-
-The conversion is based on the user's supplied Infuse SMP S3 Skript archive. PluginMart/Infuse is used as a structural reference only; no source files from that repository are copied. Preserve the original resource-pack attribution and licensing notices when redistributing its assets.
+The original texture pack and its included attribution notices are preserved. PluginMart/Infuse is used as a structural reference; its source files are not copied into this repository.
