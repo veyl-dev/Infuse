@@ -20,6 +20,9 @@ commands:
   swap:
     description: Swap your primary and secondary Infuse effects.
     usage: /swap
+  drain:
+    description: Drain an equipped effect into a potion item.
+    usage: /drain <primary|secondary>
   recipes:
     description: View Infuse effect recipes.
     usage: /recipes
