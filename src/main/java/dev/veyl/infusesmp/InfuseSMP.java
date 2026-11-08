@@ -6,6 +6,7 @@ import dev.veyl.infusesmp.data.PlayerDataStore;
 import dev.veyl.infusesmp.effect.EffectService;
 import dev.veyl.infusesmp.listener.CombatListener;
 import dev.veyl.infusesmp.listener.PlayerListener;
+import dev.veyl.infusesmp.ritual.RitualService;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import dev.veyl.infusesmp.resourcepack.ResourcePackAdapter;
@@ -14,6 +15,7 @@ public final class InfuseSMP extends JavaPlugin {
     private PlayerDataStore dataStore;
     private EffectService effectService;
     private RecipeService recipeService;
+    private RitualService ritualService;
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -24,7 +26,9 @@ public final class InfuseSMP extends JavaPlugin {
         dataStore = new PlayerDataStore(this);
         dataStore.load();
         effectService = new EffectService(this, dataStore);
-        recipeService = new RecipeService(this, effectService);
+        ritualService = new RitualService(this, effectService);
+        getServer().getPluginManager().registerEvents(ritualService, this);
+        recipeService = new RecipeService(this, effectService, ritualService);
         getServer().getPluginManager().registerEvents(recipeService, this);
         InfuseCommand executor = new InfuseCommand(this, effectService);
         for (String name : new String[]{"infuse", "activate", "trust", "swap", "recipes"}) {
@@ -41,6 +45,7 @@ public final class InfuseSMP extends JavaPlugin {
     @Override public void onDisable() {
         if (dataStore != null) dataStore.save();
         if (recipeService != null) recipeService.save();
+        if (ritualService != null) ritualService.stop();
     }
     private void saveResourceIfMissing(String name) {
         if (!getDataFolder().toPath().resolve(name).toFile().exists()) saveResource(name, false);
