@@ -84,7 +84,7 @@ public final class PlayerListener implements Listener {
     }
     @EventHandler(ignoreCancelled=true)
     public void onExperienceGain(PlayerExpChangeEvent event){
-        var player=event.getPlayer();if(!effects.hasEffect(player,"emerald"))return;
+        var player=event.getPlayer();if(effects.isEmeraldLocked(player)){event.setAmount(0);return;}if(!effects.hasEffect(player,"emerald"))return;
         double multiplier=effects.isSparkActive(player,"emerald")
                 ?plugin.getConfig().getDouble("effect-settings.emerald.spark-xp-multiplier",4.0)
                 :plugin.getConfig().getDouble("effect-settings.emerald.xp-multiplier",2.0);
@@ -98,7 +98,7 @@ public final class PlayerListener implements Listener {
     }
     @EventHandler(ignoreCancelled=true)
     public void onFoodChange(FoodLevelChangeEvent event){
-        if(event.getEntity() instanceof org.bukkit.entity.Player player&&effects.hasEffect(player,"regeneration"))event.setFoodLevel(20);
+        if(event.getEntity() instanceof org.bukkit.entity.Player player){if(effects.isEmeraldLocked(player)){event.setCancelled(true);return;}if(effects.hasEffect(player,"regeneration"))event.setFoodLevel(20);}
     }
     @EventHandler(ignoreCancelled=true)
     public void onConsumePassives(PlayerItemConsumeEvent event){
