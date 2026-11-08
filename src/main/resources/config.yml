@@ -120,18 +120,18 @@ augmented-durations:
   thunder: 10
   ender: 20
 effect-settings:
-  strength: {shield-disable-seconds: 10, shield-disable-durability: 20, shield-penetration: 2.0, mob-damage-multiplier: 2.0, double-critical-multiplier: 1.334}
-  heart: {passive-hearts: 15, spark-hearts: 20, return-after-hit-seconds: 10}
+  strength: {shield-disable-seconds: 10, shield-disable-durability: 20, shield-penetration: 2.0, mob-damage-multiplier: 2.0, double-critical-multiplier: 1.334, trigger-hits: 10}
+  heart: {passive-hearts: 15, spark-hearts: 20, return-after-hit-seconds: 10, trigger-hits: 10}
   fire: {trigger-hits: 5, ignite-ticks: 100, snowball-cooldown-seconds: 15}
   thunder: {trigger-hits: 10, lightning-chain-max: 10, lightning-chain-radius: 12}
   frost: {trigger-hits: 10, freeze-seconds: 30, lava-walk: true}
   invisibility: {trigger-hits: 10, spark-radius: 8}
   regeneration: {trigger-hits: 10, spark-heal-radius: 8}
-  speed: {dash-power: 2.6, dash-damping: 0.6}
+  speed: {dash-power: 2.6, dash-damping: 0.6, trigger-hits: 10}
   feather: {wind-burst-power: 1.5, max-wind-charge: 3}
-  haste: {break-speed-multiplier: 1.5, fortune-level: 5, efficiency-level: 10, unbreaking-level: 5}
-  ocean: {passive-radius: 8, passive-air-drain: 5, passive-damage: 1.0, pull-radius: 5, pull-strength: 0.3}
+  haste: {break-speed-multiplier: 1.5, fortune-level: 5, efficiency-level: 10, unbreaking-level: 5, trigger-hits: 10}
+  ocean: {passive-radius: 8, passive-air-drain: 5, passive-damage: 1.0, pull-radius: 5, pull-strength: 0.3, trigger-hits: 10}
   emerald: {trigger-hits: 10, xp-gain: 1, xp-multiplier: 2.0, spark-xp-multiplier: 4.0, looting-level: 5}
-  ender: {teleport-max-radius: 15}
+  ender: {teleport-max-radius: 15, trigger-hits: 10}
 storage:
   type: yaml
