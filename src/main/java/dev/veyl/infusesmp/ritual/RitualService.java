@@ -81,7 +81,7 @@ public final class RitualService implements Listener {
     @EventHandler public void onJoin(PlayerJoinEvent event){if(isActive()&&bar!=null)bar.addPlayer(event.getPlayer());}
     @EventHandler(ignoreCancelled=true)
     public void onBreak(BlockBreakEvent event){
-        if(isAt(event.getBlock().getLocation())){event.setCancelled(true);event.getPlayer().sendMessage("§cThis brewing stand is protected by an active Infuse ritual.");}
+        if(isAt(event.getBlock().getLocation())&&plugin.getConfig().getBoolean("rituals.protect-brewing-stand",true)){event.setCancelled(true);event.getPlayer().sendMessage("§cThis brewing stand is protected by an active Infuse ritual.");}
     }
     @EventHandler(ignoreCancelled=true)
     public void onInteract(PlayerInteractEvent event){
@@ -91,7 +91,7 @@ public final class RitualService implements Listener {
     }
     @EventHandler(ignoreCancelled=true)
     public void onBlockExplode(BlockExplodeEvent event){
-        if(isAt(event.getBlock().getLocation()))event.setCancelled(true);
+        if(isAt(event.getBlock().getLocation())&&plugin.getConfig().getBoolean("rituals.protect-brewing-stand",true))event.setCancelled(true);
     }
     @EventHandler(ignoreCancelled=true)
     public void onEntityExplode(EntityExplodeEvent event){
