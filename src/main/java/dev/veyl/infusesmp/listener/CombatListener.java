@@ -15,7 +15,7 @@ public final class CombatListener implements Listener {
     @EventHandler(ignoreCancelled=true)
     public void onPlayerDamage(EntityDamageByEntityEvent event){
         if(!(event.getDamager() instanceof Player attacker)||!(event.getEntity() instanceof LivingEntity victim))return;
-        if(victim instanceof Player defender&&effects.hasEffect(defender,"haste")
+        if(victim instanceof Player defender&&effects.hasEffect(attacker,"strength")
                 &&defender.isBlocking()&&attacker.getInventory().getItemInMainHand().getType().name().endsWith("_AXE")){
             event.setCancelled(true);
             defender.setCooldown(Material.SHIELD,200);
