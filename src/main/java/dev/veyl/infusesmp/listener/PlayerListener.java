@@ -15,6 +15,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.entity.Projectile;
 
 public final class PlayerListener implements Listener {
@@ -75,6 +76,14 @@ public final class PlayerListener implements Listener {
         boolean augmented=slot.equals("primary")?data.primaryAugmented():data.secondaryAugmented();
         event.getDrops().add(effects.createEffectItem(effect,augmented));
         effects.remove(player,slot);
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onExperienceGain(PlayerExpChangeEvent event){
+        var player=event.getPlayer();if(!effects.hasEffect(player,"emerald"))return;
+        double multiplier=effects.isSparkActive(player,"emerald")
+                ?plugin.getConfig().getDouble("effect-settings.emerald.spark-xp-multiplier",4.0)
+                :plugin.getConfig().getDouble("effect-settings.emerald.xp-multiplier",2.0);
+        event.setAmount((int)Math.round(event.getAmount()*multiplier));
     }
     @EventHandler(ignoreCancelled=true)
     public void onFallDamage(EntityDamageEvent event){
