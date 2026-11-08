@@ -8,6 +8,7 @@ import dev.veyl.infusesmp.listener.CombatListener;
 import dev.veyl.infusesmp.listener.PlayerListener;
 import dev.veyl.infusesmp.ritual.RitualService;
 import dev.veyl.infusesmp.menu.MenuService;
+import dev.veyl.infusesmp.message.MessageService;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import dev.veyl.infusesmp.resourcepack.ResourcePackAdapter;
@@ -18,11 +19,13 @@ public final class InfuseSMP extends JavaPlugin {
     private RecipeService recipeService;
     private RitualService ritualService;
     private MenuService menuService;
+    private MessageService messageService;
 
     @Override public void onEnable() {
         saveDefaultConfig();
         saveResourceIfMissing("messages.yml");
         saveResourceIfMissing("gui.yml");
+        messageService = new MessageService(this);
         try { ResourcePackAdapter.extract(this); }
         catch (Exception ex) { getLogger().severe("Could not prepare resource pack: " + ex.getMessage()); }
         dataStore = new PlayerDataStore(this);
@@ -56,5 +59,6 @@ public final class InfuseSMP extends JavaPlugin {
     }
     public EffectService effects() { return effectService; }
     public MenuService menus() { return menuService; }
+    public MessageService messages() { return messageService; }
     public PlayerDataStore data() { return dataStore; }
 }
