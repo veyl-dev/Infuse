@@ -433,6 +433,12 @@ public final class EffectService {
             case "regeneration" -> attacker.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,60,1));
             case "emerald" -> attacker.giveExp(plugin.getConfig().getInt("effect-settings.emerald.xp-gain",1));
             case "feather" -> attacker.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING,100,0));
+            case "heart" -> attacker.setHealth(Math.min(attacker.getMaxHealth(),attacker.getHealth()+4));
+            case "haste" -> attacker.addPotionEffect(new PotionEffect(PotionEffectType.HASTE,60,2));
+            case "ocean" -> { victim.setRemainingAir(Math.max(-20,victim.getRemainingAir()-10)); if(victim.getRemainingAir()<=0)victim.damage(1.0,attacker); }
+            case "speed" -> attacker.addPotionEffect(new PotionEffect(PotionEffectType.SPEED,60,2));
+            case "strength" -> attacker.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH,60,1));
+            case "ender" -> victim.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING,100,0));
             default -> { }
         }
         attacker.sendActionBar(ChatColor.GREEN+(primary?"Primary":"Secondary")+" effect triggered!");
