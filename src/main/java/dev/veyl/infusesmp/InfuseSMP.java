@@ -25,6 +25,7 @@ public final class InfuseSMP extends JavaPlugin {
         saveDefaultConfig();
         saveResourceIfMissing("messages.yml");
         saveResourceIfMissing("gui.yml");
+        saveResourceIfMissing("recipes.yml");
         messageService = new MessageService(this);
         try { ResourcePackAdapter.extract(this); }
         catch (Exception ex) { getLogger().severe("Could not prepare resource pack: " + ex.getMessage()); }
@@ -35,7 +36,7 @@ public final class InfuseSMP extends JavaPlugin {
         getServer().getPluginManager().registerEvents(ritualService, this);
         recipeService = new RecipeService(this, effectService, ritualService);
         getServer().getPluginManager().registerEvents(recipeService, this);
-        menuService = new MenuService(this, effectService);
+        menuService = new MenuService(this, effectService, recipeService);
         getServer().getPluginManager().registerEvents(menuService, this);
         InfuseCommand executor = new InfuseCommand(this, effectService);
         for (String name : new String[]{"infuse", "activate", "trust", "swap", "recipes", "drain"}) {
@@ -60,5 +61,6 @@ public final class InfuseSMP extends JavaPlugin {
     public EffectService effects() { return effectService; }
     public MenuService menus() { return menuService; }
     public MessageService messages() { return messageService; }
+    public RecipeService recipes() { return recipeService; }
     public PlayerDataStore data() { return dataStore; }
 }
