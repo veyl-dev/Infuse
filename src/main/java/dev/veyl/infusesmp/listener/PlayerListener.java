@@ -164,8 +164,7 @@ public final class PlayerListener implements Listener {
         if(event.getEntity() instanceof DragonFireball fireball&&fireball.getShooter() instanceof org.bukkit.entity.Player player
                 &&effects.hasEffect(player,"ender")&&event.getHitEntity() instanceof org.bukkit.entity.LivingEntity target){
             target.damage(6.0,player);
-            target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.WITHER,100,1));
-            target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.GLOWING,200,0));
+            effects.applyEnderCurse((org.bukkit.entity.Player)target,player);
         }
     }
     @EventHandler(ignoreCancelled=true)
