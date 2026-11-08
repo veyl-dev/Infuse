@@ -48,12 +48,14 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
     private boolean infuse(CommandSender sender,String[] args){
         if(args.length==0||args[0].equalsIgnoreCase("help")){
             sender.sendMessage(ChatColor.GREEN+"InfuseSMP S3");
-            sender.sendMessage(ChatColor.GRAY+"/infuse gui | effects | get [player] | add <player> <slot> <effect> [augmented]");
+            sender.sendMessage(ChatColor.GRAY+"/infuse gui | effects | controls | bind <slot> <swap|drop> | get [player] | add <player> <slot> <effect> [augmented]");
             sender.sendMessage(ChatColor.GRAY+"/infuse remove <player> <slot> | give <player> <effect> [augmented] | reload");
             return true;
         }
         switch(args[0].toLowerCase(Locale.ROOT)){
             case "effects" -> sender.sendMessage(ChatColor.GREEN+"Effects: "+String.join(", ",Arrays.stream(InfuseEffect.values()).map(InfuseEffect::id).toList()));
+            case "controls" -> { if(sender instanceof Player p){PlayerData d=effects.data(p);p.sendMessage(ChatColor.GREEN+"Primary: "+d.primaryControl()+" | Secondary: "+d.secondaryControl());p.sendMessage(ChatColor.GRAY+"Use /infuse bind <primary|secondary> <swap|drop> to change controls.");} }
+            case "bind" -> bind(sender,args);
             case "gui" -> { if(sender instanceof Player player)plugin.menus().openEffects(player); else sender.sendMessage("Players only."); }
             case "reload" -> {
                 if(!sender.hasPermission("infusesmp.reload"))return deny(sender);
@@ -92,6 +94,16 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         }
         return true;
     }
+    private boolean bind(CommandSender sender,String[] args){
+        if(!(sender instanceof Player p)){sender.sendMessage("Players only.");return true;}
+        if(args.length!=3||(!args[1].equalsIgnoreCase("primary")&&!args[1].equalsIgnoreCase("secondary"))
+                ||(!args[2].equalsIgnoreCase("swap")&&!args[2].equalsIgnoreCase("drop"))){
+            p.sendMessage(ChatColor.RED+"Usage: /infuse bind <primary|secondary> <swap|drop>");return true;
+        }
+        effects.data(p).control(args[1].equalsIgnoreCase("primary"),args[2].toLowerCase(Locale.ROOT));
+        p.sendMessage(ChatColor.GREEN+"Bound "+args[1]+" spark to "+args[2]+".");
+        return true;
+    }
     private boolean trust(CommandSender sender,String[] args){
         if(!(sender instanceof Player p)){sender.sendMessage("Players only.");return true;}
         PlayerData d=effects.data(p);
@@ -99,16 +111,31 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
             List<String> names=new ArrayList<>();for(UUID id:d.trusted()){String n=Bukkit.getOfflinePlayer(id).getName();names.add(n==null?id.toString():n);}
             p.sendMessage(ChatColor.GREEN+"Trusted: "+(names.isEmpty()?"none":String.join(", ",names)));return true;
         }
-        if(args[0].equalsIgnoreCase("clear")){d.trusted().clear();p.sendMessage(ChatColor.YELLOW+"Trust list cleared.");return true;}
+        if(args[0].equalsIgnoreCase("clear")){
+            if(!trustDelayReady(p,d))return true;
+            d.trusted().clear();d.lastTrustAction(System.currentTimeMillis());p.sendMessage(ChatColor.YELLOW+"Trust list cleared.");return true;
+        }
         if(args.length<2){p.sendMessage(ChatColor.RED+"/trust <add|remove> <player>");return true;}
+        if(!args[0].equalsIgnoreCase("add")&&!args[0].equalsIgnoreCase("remove")){p.sendMessage(ChatColor.RED+"Choose add or remove.");return true;}
+        if(!trustDelayReady(p,d))return true;
         Player target=Bukkit.getPlayerExact(args[1]);if(target==null){p.sendMessage(ChatColor.RED+"Player must be online.");return true;}
+        if(target.equals(p)){p.sendMessage(ChatColor.RED+"You cannot trust yourself.");return true;}
         if(args[0].equalsIgnoreCase("add")){
             int max=plugin.getConfig().getInt("settings.trust-list.maximum",3);
+            if(d.trusted().contains(target.getUniqueId())){p.sendMessage(ChatColor.YELLOW+"That player is already trusted.");return true;}
             if(d.trusted().size()>=max){p.sendMessage(ChatColor.RED+"Trust list is full.");return true;}
             d.trusted().add(target.getUniqueId());p.sendMessage(ChatColor.GREEN+"Trusted "+target.getName());
-        }else if(args[0].equalsIgnoreCase("remove")){
-            d.trusted().remove(target.getUniqueId());p.sendMessage(ChatColor.YELLOW+"Untrusted "+target.getName());
+        }else{
+            if(!d.trusted().remove(target.getUniqueId())){p.sendMessage(ChatColor.YELLOW+"That player is not on your trust list.");return true;}
+            p.sendMessage(ChatColor.YELLOW+"Untrusted "+target.getName());
         }
+        d.lastTrustAction(System.currentTimeMillis());
+        return true;
+    }
+    private boolean trustDelayReady(Player player,PlayerData data){
+        long delay=plugin.getConfig().getLong("settings.trust-list.action-delay-seconds",10)*1000L;
+        long remaining=delay-(System.currentTimeMillis()-data.lastTrustAction());
+        if(remaining>0){player.sendMessage(ChatColor.RED+"Wait "+((remaining+999)/1000)+"s before changing your trust list again.");return false;}
         return true;
     }
     private boolean deny(CommandSender s){s.sendMessage(ChatColor.RED+"You do not have permission.");return true;}
@@ -117,7 +144,9 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         if(c.getName().equalsIgnoreCase("activate"))return args.length==1?List.of("primary","secondary"):List.of();
         if(c.getName().equalsIgnoreCase("trust"))return args.length==1?List.of("add","remove","list","clear"):args.length==2?Bukkit.getOnlinePlayers().stream().map(Player::getName).toList():List.of();
         if(c.getName().equalsIgnoreCase("infuse")){
-            if(args.length==1)return List.of("help","gui","effects","get","add","remove","give","reload");
+            if(args.length==1)return List.of("help","gui","effects","controls","bind","get","add","remove","give","reload");
+            if(args.length==2&&args[0].equalsIgnoreCase("bind"))return List.of("primary","secondary");
+            if(args.length==3&&args[0].equalsIgnoreCase("bind"))return List.of("swap","drop");
             if(args.length==2&&List.of("get","add","remove","give").contains(args[0]))return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
             if(args.length==3&&List.of("add","remove").contains(args[0]))return List.of("primary","secondary");
             if(args.length==4&&args[0].equalsIgnoreCase("add"))return Arrays.stream(InfuseEffect.values()).map(InfuseEffect::id).toList();
