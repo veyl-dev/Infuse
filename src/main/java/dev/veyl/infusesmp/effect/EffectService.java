@@ -51,7 +51,7 @@ public final class EffectService {
         PlayerData d=data(player);
         applyBasicPassive(player,d.primary());
         applyBasicPassive(player,d.secondary());
-        if("ocean".equals(d.primary())||"ocean".equals(d.secondary()))applyIfMissing(player,PotionEffectType.WATER_BREATHING,100,0);
+        if("ocean".equals(d.primary())||"ocean".equals(d.secondary()))applyIfMissing(player,PotionEffectType.WATER_BREATHING,40,0);
     }
     public void refreshPassives(){
         for(Player player:plugin.getServer().getOnlinePlayers())applyPassive(player);
@@ -62,7 +62,7 @@ public final class EffectService {
     private void applyBasicPassive(Player player,String id){
         InfuseEffect effect=InfuseEffect.fromId(id);
         if(effect==null||effect.passive()==null)return;
-        applyIfMissing(player,effect.passive(),100,0);
+        applyIfMissing(player,effect.passive(),40,0);
     }
     public boolean activate(Player player,boolean primary){
         PlayerData d=data(player);String id=primary?d.primary():d.secondary();if(id==null)return false;
