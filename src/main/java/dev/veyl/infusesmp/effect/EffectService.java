@@ -68,6 +68,19 @@ public final class EffectService {
         if(slot.equalsIgnoreCase("primary"))d.primary(effect.id(),augmented);else d.secondary(effect.id(),augmented);
         d.addHistory("equip:"+slot+":"+effect.id());applyPassive(player);
     }
+    public boolean drain(Player player,String slot){
+        PlayerData d=data(player);
+        String id=slot.equalsIgnoreCase("primary")?d.primary():d.secondary();
+        if(id==null)return false;
+        if(player.getInventory().firstEmpty()==-1)return false;
+        InfuseEffect effect=InfuseEffect.fromId(id);
+        if(effect==null)return false;
+        boolean augmented=slot.equalsIgnoreCase("primary")?d.primaryAugmented():d.secondaryAugmented();
+        remove(player,slot);
+        player.getInventory().addItem(createEffectItem(effect,augmented));
+        player.sendMessage(ChatColor.GREEN+"Drained "+effect.displayName()+" from your "+slot+" slot.");
+        return true;
+    }
     public void remove(Player player,String slot){
         PlayerData d=data(player);if(slot.equalsIgnoreCase("primary"))d.primary(null,false);else d.secondary(null,false);
         d.addHistory("remove:"+slot);applyPassive(player);
