@@ -1,7 +1,7 @@
 name: InfuseSMP-S3
 version: ${version}
 main: dev.veyl.infusesmp.InfuseSMP
-api-version: '1.21'
+api-version: '${apiVersion}'
 description: Infuse SMP Season 3 abilities, effects and crafting.
 author: veyl-dev
 website: https://github.com/veyl-dev/Infuse
