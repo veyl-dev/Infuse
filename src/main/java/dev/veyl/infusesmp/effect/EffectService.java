@@ -4,7 +4,9 @@ import dev.veyl.infusesmp.InfuseSMP;
 import dev.veyl.infusesmp.data.PlayerData;
 import dev.veyl.infusesmp.data.PlayerDataStore;
 import org.bukkit.*;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -89,19 +91,100 @@ public final class EffectService {
     }
     private void runSpark(Player p,InfuseEffect e){
         switch(e){
-            case HEART,REGENERATION -> p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,100,1));
-            case SPEED,FEATHER -> p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED,100,1));
-            case STRENGTH -> p.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH,100,1));
-            case FIRE -> p.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE,200,0));
-            case FROST -> p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,100,1));
-            case INVISIBILITY -> p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,100,0));
-            case HASTE -> p.addPotionEffect(new PotionEffect(PotionEffectType.HASTE,100,2));
-            case OCEAN -> p.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE,200,1));
-            case EMERALD -> p.giveExp(plugin.getConfig().getInt("effect-settings.emerald.xp-gain",1)*10);
-            case THUNDER -> p.getWorld().strikeLightningEffect(p.getLocation());
-            case ENDER -> p.teleport(p.getLocation().add(p.getLocation().getDirection().multiply(
-                    plugin.getConfig().getDouble("effect-settings.ender.teleport-max-radius",15))));
+            case EMERALD -> {
+                p.giveExp(40);
+                p.addPotionEffect(new PotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE,200,4));
+                for(Player ally:nearbyPlayers(p,8))if(data(p).trusted().contains(ally.getUniqueId()))ally.giveExp(10);
+            }
+            case FEATHER -> {
+                p.setVelocity(p.getVelocity().setY(2.0));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING,120,0));
+            }
+            case FIRE -> {
+                for(Player target:nearbyEnemies(p,6)){
+                    target.setFireTicks(Math.max(target.getFireTicks(),200));
+                    target.setVelocity(target.getVelocity().setY(1.15));
+                }
+                p.getWorld().playSound(p.getLocation(),Sound.ITEM_FIRECHARGE_USE,1f,0.8f);
+            }
+            case FROST -> {
+                for(Player target:nearbyEnemies(p,8)){
+                    target.setFreezeTicks(Math.max(target.getFreezeTicks(),600));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,200,1));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE,200,1));
+                }
+                p.getWorld().spawnParticle(Particle.SNOWFLAKE,p.getLocation(),80,4,1,4,.05);
+            }
+            case HASTE -> p.addPotionEffect(new PotionEffect(PotionEffectType.HASTE,200,2));
+            case HEART -> {
+                p.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST,200,4));
+                p.setHealth(Math.min(p.getMaxHealth(),p.getHealth()+10));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,200,1));
+            }
+            case INVISIBILITY -> {
+                p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,200,0));
+                for(Player ally:nearbyPlayers(p,8))if(data(p).trusted().contains(ally.getUniqueId()))ally.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,200,0));
+                for(Player target:nearbyEnemies(p,8)){
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,100,0));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.WITHER,100,0));
+                }
+                p.getWorld().spawnParticle(Particle.LARGE_SMOKE,p.getLocation().add(0,1,0),70,3,1,3,.03);
+            }
+            case OCEAN -> {
+                for(Player target:nearbyEnemies(p,8)){
+                    Vector pull=p.getLocation().toVector().subtract(target.getLocation().toVector()).normalize().multiply(.85);
+                    pull.setY(.15);target.setVelocity(pull);
+                }
+                p.getWorld().spawnParticle(Particle.BUBBLE,p.getLocation(),90,4,1,4,.04);
+            }
+            case REGENERATION -> {
+                p.setHealth(Math.min(p.getMaxHealth(),p.getHealth()+4));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,160,2));
+                for(Player ally:nearbyPlayers(p,8)){
+                    if(data(p).trusted().contains(ally.getUniqueId())){
+                        ally.setHealth(Math.min(ally.getMaxHealth(),ally.getHealth()+4));
+                        ally.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,100,1));
+                    }
+                }
+            }
+            case SPEED -> {
+                Vector dash=p.getLocation().getDirection().normalize().multiply(plugin.getConfig().getDouble("effect-settings.speed.dash-power",2.6));
+                dash.setY(dash.getY()*plugin.getConfig().getDouble("effect-settings.speed.dash-damping",.6));
+                p.setVelocity(dash);
+                for(Player target:nearbyEnemies(p,2))target.damage(2.0,p);
+            }
+            case STRENGTH -> p.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH,200,1));
+            case THUNDER -> {
+                int count=0;
+                for(Player target:nearbyEnemies(p,16)){
+                    target.getWorld().strikeLightningEffect(target.getLocation());
+                    target.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",1.0),p);
+                    if(++count>=5)break;
+                }
+            }
+            case ENDER -> {
+                org.bukkit.block.Block block=p.getTargetBlockExact((int)plugin.getConfig().getDouble("effect-settings.ender.teleport-max-radius",15));
+                if(block==null){p.sendMessage(ChatColor.RED+"No safe target in range.");break;}
+                org.bukkit.Location destination=block.getLocation().add(.5,1,.5);
+                if(!destination.getBlock().isPassable()||!destination.clone().add(0,1,0).getBlock().isPassable()){
+                    p.sendMessage(ChatColor.RED+"That location is not safe.");break;
+                }
+                destination.setDirection(p.getLocation().getDirection());
+                p.teleport(destination);
+            }
         }
+    }
+    private List<Player> nearbyPlayers(Player source,double radius){
+        List<Player> result=new java.util.ArrayList<>();
+        for(Entity entity:source.getNearbyEntities(radius,radius,radius))if(entity instanceof Player target&&target!=source)result.add(target);
+        return result;
+    }
+    private List<Player> nearbyEnemies(Player source,double radius){
+        List<Player> result=new java.util.ArrayList<>();
+        for(Player target:nearbyPlayers(source,radius)){
+            if(!data(source).trusted().contains(target.getUniqueId())&&!data(target).trusted().contains(source.getUniqueId()))result.add(target);
+        }
+        return result;
     }
     public void onCombatHit(Player attacker){
         PlayerData d=data(attacker);charge(attacker,d,true);charge(attacker,d,false);
