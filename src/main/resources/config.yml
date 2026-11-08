@@ -50,18 +50,18 @@ effects:
   primary: [heart, strength, regeneration, haste, invisibility, frost, thunder, feather]
   secondary: [speed, fire, ocean, emerald]
   crafting:
-    emerald: {craft-limit: -1, augment-limit: 0}
-    feather: {craft-limit: -1, augment-limit: 0}
-    fire: {craft-limit: -1, augment-limit: 0}
-    frost: {craft-limit: -1, augment-limit: 0}
-    haste: {craft-limit: -1, augment-limit: 0}
-    heart: {craft-limit: -1, augment-limit: 0}
-    invisibility: {craft-limit: -1, augment-limit: 0}
-    ocean: {craft-limit: -1, augment-limit: 0}
-    regeneration: {craft-limit: -1, augment-limit: 0}
-    speed: {craft-limit: -1, augment-limit: 0}
-    strength: {craft-limit: -1, augment-limit: 0}
-    thunder: {craft-limit: -1, augment-limit: 0}
+    emerald: {craft-limit: 3, augment-limit: 1}
+    feather: {craft-limit: 3, augment-limit: 1}
+    fire: {craft-limit: 3, augment-limit: 1}
+    frost: {craft-limit: 3, augment-limit: 1}
+    haste: {craft-limit: 3, augment-limit: 1}
+    heart: {craft-limit: 3, augment-limit: 1}
+    invisibility: {craft-limit: 3, augment-limit: 1}
+    ocean: {craft-limit: 3, augment-limit: 1}
+    regeneration: {craft-limit: 3, augment-limit: 1}
+    speed: {craft-limit: 3, augment-limit: 1}
+    strength: {craft-limit: 3, augment-limit: 1}
+    thunder: {craft-limit: 3, augment-limit: 1}
     ender: {craft-limit: 1, augment-limit: 1}
 cooldowns:
   emerald: 91
