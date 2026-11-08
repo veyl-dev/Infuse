@@ -1,3 +1,6 @@
+rituals:
+  duration-seconds: 600
+  protect-brewing-stand: true
 settings:
   autosave-seconds: 60
   allow-same-effects: false
