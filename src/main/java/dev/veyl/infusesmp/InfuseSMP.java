@@ -7,6 +7,7 @@ import dev.veyl.infusesmp.effect.EffectService;
 import dev.veyl.infusesmp.listener.CombatListener;
 import dev.veyl.infusesmp.listener.PlayerListener;
 import dev.veyl.infusesmp.ritual.RitualService;
+import dev.veyl.infusesmp.menu.MenuService;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import dev.veyl.infusesmp.resourcepack.ResourcePackAdapter;
@@ -16,6 +17,7 @@ public final class InfuseSMP extends JavaPlugin {
     private EffectService effectService;
     private RecipeService recipeService;
     private RitualService ritualService;
+    private MenuService menuService;
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -30,6 +32,8 @@ public final class InfuseSMP extends JavaPlugin {
         getServer().getPluginManager().registerEvents(ritualService, this);
         recipeService = new RecipeService(this, effectService, ritualService);
         getServer().getPluginManager().registerEvents(recipeService, this);
+        menuService = new MenuService(this, effectService);
+        getServer().getPluginManager().registerEvents(menuService, this);
         InfuseCommand executor = new InfuseCommand(this, effectService);
         for (String name : new String[]{"infuse", "activate", "trust", "swap", "recipes"}) {
             PluginCommand command = getCommand(name);
@@ -51,5 +55,6 @@ public final class InfuseSMP extends JavaPlugin {
         if (!getDataFolder().toPath().resolve(name).toFile().exists()) saveResource(name, false);
     }
     public EffectService effects() { return effectService; }
+    public MenuService menus() { return menuService; }
     public PlayerDataStore data() { return dataStore; }
 }
