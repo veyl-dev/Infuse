@@ -130,7 +130,7 @@ effect-settings:
   speed: {dash-power: 2.6, dash-damping: 0.6}
   feather: {wind-burst-power: 1.5, max-wind-charge: 3}
   haste: {break-speed-multiplier: 1.5}
-  ocean: {passive-radius: 8}
+  ocean: {passive-radius: 8, passive-air-drain: 5, passive-damage: 1.0, pull-radius: 5, pull-strength: 0.3}
   emerald: {trigger-hits: 10, xp-gain: 1, xp-multiplier: 2.0, spark-xp-multiplier: 4.0}
   ender: {teleport-max-radius: 15}
 storage:
