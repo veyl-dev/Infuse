@@ -36,7 +36,7 @@ public final class PlayerListener implements Listener {
         var player=event.getPlayer();var data=effects.data(player);
         if(!"swap".equalsIgnoreCase(data.primaryControl()))return;
         if(data.primary()==null)return;
-        if(effects.activate(player,true))event.setCancelled(true);
+        effects.activate(player,true);event.setCancelled(true);
     }
     @EventHandler(ignoreCancelled=true)
     public void onDropControl(PlayerDropItemEvent event){
@@ -44,7 +44,7 @@ public final class PlayerListener implements Listener {
         var player=event.getPlayer();var data=effects.data(player);
         if(!"drop".equalsIgnoreCase(data.secondaryControl()))return;
         if(data.secondary()==null)return;
-        if(effects.activate(player,false))event.setCancelled(true);
+        effects.activate(player,false);event.setCancelled(true);
     }
     @EventHandler(ignoreCancelled=true)
     public void onEffectDrink(PlayerItemConsumeEvent event){
