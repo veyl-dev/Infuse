@@ -78,14 +78,17 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
                 if(args.length<3){sender.sendMessage(ChatColor.RED+"/infuse remove <player> <primary|secondary>");return true;}
                 Player target=Bukkit.getPlayerExact(args[1]);
                 if(target==null||(!args[2].equalsIgnoreCase("primary")&&!args[2].equalsIgnoreCase("secondary"))){sender.sendMessage(ChatColor.RED+"Invalid player or slot.");return true;}
-                effects.remove(target,args[2]);sender.sendMessage(ChatColor.GREEN+"Effect removed.");
+                String id=args[2].equalsIgnoreCase("primary")?effects.data(target).primary():effects.data(target).secondary();
+                if(id==null){plugin.messages().send(sender,"effect-empty",Map.of("slot",args[2]));return true;}
+                effects.remove(target,args[2]);plugin.messages().send(target,"effect-removed",Map.of("slot",args[2]));sender.sendMessage(ChatColor.GREEN+"Effect removed from "+target.getName()+".");
             }
             case "give" -> {
                 if(!sender.hasPermission("infusesmp.give"))return deny(sender);
                 if(args.length<3){sender.sendMessage(ChatColor.RED+"/infuse give <player> <effect> [augmented]");return true;}
                 Player target=Bukkit.getPlayerExact(args[1]);InfuseEffect effect=InfuseEffect.fromId(args[2]);
                 if(target==null||effect==null){sender.sendMessage(ChatColor.RED+"Invalid player or effect.");return true;}
-                target.getInventory().addItem(effects.createEffectItem(effect,args.length>3&&Boolean.parseBoolean(args[3])));
+                var leftovers=target.getInventory().addItem(effects.createEffectItem(effect,args.length>3&&Boolean.parseBoolean(args[3])));
+                leftovers.values().forEach(item->target.getWorld().dropItemNaturally(target.getLocation(),item));
                 sender.sendMessage(ChatColor.GREEN+"Given "+effect.id()+" to "+target.getName());
             }
             default -> sender.sendMessage(ChatColor.RED+"Unknown subcommand. Use /infuse help.");
