@@ -28,7 +28,19 @@ public final class PlayerListener implements Listener {
         this.plugin=plugin;this.effects=effects;this.store=store;
     }
     @EventHandler public void onJoin(PlayerJoinEvent event){
-        effects.applyPassive(event.getPlayer());
+        var player=event.getPlayer();
+        if(plugin.getConfig().getBoolean("settings.roll-first-join",false)){
+            var data=effects.data(player);
+            if(data.primary()==null&&data.secondary()==null){
+                var pool=java.util.Arrays.stream(dev.veyl.infusesmp.effect.InfuseEffect.values()).toList();
+                if(!pool.isEmpty()){
+                    var selected=pool.get(java.util.concurrent.ThreadLocalRandom.current().nextInt(pool.size()));
+                    effects.equip(player,"primary",selected,false);
+                    player.sendMessage("§aYour first Infuse effect is "+selected.displayName()+"!");
+                }
+            }
+        }
+        effects.applyPassive(player);
         if(plugin.getConfig().getBoolean("settings.resource-pack.enabled",false)){
             String url=plugin.getConfig().getString("settings.resource-pack.url","");
             String hash=plugin.getConfig().getString("settings.resource-pack.sha1","");
