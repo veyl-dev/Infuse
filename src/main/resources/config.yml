@@ -124,7 +124,7 @@ effect-settings:
   heart: {passive-hearts: 15, spark-hearts: 20, return-after-hit-seconds: 10, trigger-hits: 10}
   fire: {trigger-hits: 5, ignite-ticks: 100, snowball-cooldown-seconds: 15}
   thunder: {trigger-hits: 10, lightning-chain-max: 10, lightning-chain-radius: 12}
-  frost: {trigger-hits: 10, freeze-seconds: 30, lava-walk: true}
+  frost: {trigger-hits: 10, freeze-seconds: 30, lava-walk: true, snow-changing-radius: 3, snow-duration-seconds: 5}
   invisibility: {trigger-hits: 10, spark-radius: 8}
   regeneration: {trigger-hits: 10, spark-heal-radius: 8}
   speed: {dash-power: 2.6, dash-damping: 0.6, trigger-hits: 10}
