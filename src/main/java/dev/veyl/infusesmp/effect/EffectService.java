@@ -57,11 +57,41 @@ public final class EffectService {
             meta.setColor(effect.color());
             meta.setCustomModelData(effect.modelData()+(augmented?100:0));
             meta.getPersistentDataContainer().set(itemKey,PersistentDataType.STRING,effect.id()+(augmented?":augmented":""));
-            meta.setLore(List.of(ChatColor.GRAY+"Infuse SMP Season 3",
-                    ChatColor.DARK_GRAY+"Drink to equip in your next available slot",
-                    augmented?ChatColor.LIGHT_PURPLE+"Augmented Effect":ChatColor.GREEN+"Regular Effect"));
+            meta.setLore(effectLore(effect,augmented));
             item.setItemMeta(meta);
         }return item;
+    }
+
+    private List<String> effectLore(InfuseEffect effect,boolean augmented){
+        String icon;
+        List<String> passive;
+        List<String> spark;
+        switch(effect){
+            case EMERALD -> {icon="💲";passive=List.of("Looting 5","Permanent Hero of the village","2.0x XP gain","Consumables have a 50.0% chance of not being consumed","Receiving 10 hits lock the attacker's food and XP");spark=List.of("Max level enchanting without bookshelves","Each hit steals XP from your enemy","Hero of the village 5.0","4.0x XP gain","Consumables have a 75.0% chance not to be consumed","Share XP with nearby teammates (hit them)");}
+            case FEATHER -> {icon="☁";passive=List.of("No Fall damage","Immune to kinetic energy","Windburst on all attacks","Falling from higher deals more damage","Windcharges have 2.0x velocity and 0.5x use speed","Receiving 10 hits spawns an orbiting wind charge(crouch to use)");spark=List.of("Launches the player upward","Falling from higher up deals 2.0 hearts on impact","Impact radius and bounce height scale with the distance fallen","Enemies hit by the shockwave are given slow falling","Crouch to cancel the bounce");}
+            case FIRE -> {icon="🔥";passive=List.of("Permanent Fire Resistance","Propel yourself through lava","Lava breaks your fall","Snowballs turn into fireballs","5th hit sets enemies on fire","Flame on ranged attacks","Fire spreads to nearby enemies that touch each other","Extinguish nearby water sources when on fire");spark=List.of("Ignite all players before all launching them into the air","Extinguishes all nearby water sources and set flammable blocks on fire");}
+            case FROST -> {icon="❄";passive=List.of("10th hit freezes enemies and puts windcharges on cooldown","Frosted enemies create ice trails and get Mining Fatigue","1.5x speed and 30.0% KB resistance on ice/snow","Cools down and solidifies lava","Frost on ranged attacks");spark=List.of("Apply frost and mining fatigue 2.0 on hit","2.0x speed on ice/snow");}
+            case THUNDER -> {icon="⚡";passive=List.of("Smite players on every 10th hit (5th if raining)","Thunder chains to nearby enemies up to 10 times","Tridents smite enemies when thrown");spark=List.of("Smite all players up to 5 times","Radius increases the more enemies are inside");}
+            case HASTE -> {icon="⛏";passive=List.of("Break blocks faster","Tools have Fortune 5 and Unbreaking 10","Enemies have reduced I-Frames","Each hit increases attack speed","Attack speed decays every 1.0s");spark=List.of("Insta mine all blocks");}
+            case HEART -> {icon="❤";passive=List.of("+5 Hearts","Food items give 2.0 absorption hearts","Egaps give 10.0 absorption hearts","Hit teammates to give them your extra HP as absorption hearts");spark=List.of("+10.0 hearts","Heals you the amount of damage you dealt in the past 30.0s");}
+            case INVISIBILITY -> {icon="👁";passive=List.of("Invisibility","No entity collision","Mobs don't target you","Immune to wither and darkness","Obscures kill credit","Blindness on ranged attacks","10th hit gives blindness");spark=List.of("Creates a smoke screen","Applies wither and blindness to enemies","Gives true invis to you and people in your trust list","Smoke radius increases with more teammates inside");}
+            case OCEAN -> {icon="🌊";passive=List.of("Dolphin's Grace and Waterbreathing","Drown nearby enemies","Standing in rain increases drowning damage","Nearby teammates get water breathing","Tridents have loyalty 5 and pull enemies");spark=List.of("Creates a whirlpool that pulls in nearby enemies");}
+            case REGENERATION -> {icon="+";passive=List.of("No hunger loss","Permanent Regeneration","Every hit gives Regeneration 2 for 3.0s","All food gives +3.0 saturation bars","Eat anytime","10th hit takes away 1.0 hunger bar from your target");spark=List.of("Damage dealth heals you and nearby teammates");}
+            case SPEED -> {icon="⏩";passive=List.of("+0.2x movement speed","Each hit increases speed level","Getting hit lowers speed level","Each hit increases speed level","Improved projectile speed, accuracy and range");spark=List.of("Dash forward dealing damage");}
+            case STRENGTH -> {icon="🛡";passive=List.of("Shield disables are 2.0x longer","Damages shields by 20 when disabling","0.5x damage penetrates when disabling shields","2.0x damage to all mobs","+0.3 attack damage for every 1HP Lost","Piercing on ranged attacks");spark=List.of("All attacks are critical");}
+            case ENDER -> {icon="⭐";passive=List.of("All nearby untrusted players have glowing","Use dragon's breath to shoot powerful fireballs that curse players","Curse untrusted players on hit which shares damage with all cursed players");spark=List.of("Teleport to the cursor position within a 15 block radius","Instantly kills any mob and curses players","Cursing a player resets the spark cooldown");}
+            default -> throw new IllegalArgumentException("Unsupported effect: "+effect);
+        }
+        List<String> lore=new ArrayList<>();
+        lore.add(ChatColor.DARK_GRAY+"ᴘᴀꜱꜱɪᴠᴇ ᴇꜰꜰᴇᴄᴛꜱ:");
+        for(String line:passive)lore.add(ChatColor.GRAY+icon+" "+line);
+        lore.add("");
+        lore.add(ChatColor.DARK_GRAY+"ꜱᴘᴀʀᴋ ᴇꜰꜰᴇᴄᴛꜱ:");
+        for(String line:spark)lore.add(ChatColor.GRAY+icon+" "+line);
+        lore.add("");
+        lore.add(augmented?ChatColor.LIGHT_PURPLE+"Augmented Effect":ChatColor.GREEN+"Regular Effect");
+        lore.add(ChatColor.DARK_GRAY+"Drink to equip in your next available slot");
+        return lore;
     }
     public InfuseEffect effectFromItem(ItemStack item){
         if(!isEffectItem(item))return null;
