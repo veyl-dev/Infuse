@@ -63,7 +63,7 @@ public final class MenuService implements Listener {
         List<Integer> slots=gui.getIntegerList("recipe.ingredient-slots");
         if(materials!=null)for(int i=0;i<Math.min(9,slots.size());i++){
             int slot=slots.get(i);if(slot<0||slot>=inv.getSize())continue;
-            Material mat=Material.matchMaterial(materials[i]);if(mat!=null)inv.setItem(slot,new ItemStack(mat));
+            Material mat=materials[i]==null?null:Material.matchMaterial(materials[i]);if(mat!=null)inv.setItem(slot,new ItemStack(mat));
         }
         set(inv,"recipe.output-slot",24,effects.createEffectItem(effect,false));
         set(inv,"recipe.back-slot",40,plain(Material.ARROW,ChatColor.YELLOW+"Back to effects"));
