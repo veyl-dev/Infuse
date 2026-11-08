@@ -35,7 +35,7 @@ public final class InfuseSMP extends JavaPlugin {
         menuService = new MenuService(this, effectService);
         getServer().getPluginManager().registerEvents(menuService, this);
         InfuseCommand executor = new InfuseCommand(this, effectService);
-        for (String name : new String[]{"infuse", "activate", "trust", "swap", "recipes"}) {
+        for (String name : new String[]{"infuse", "activate", "trust", "swap", "recipes", "drain"}) {
             PluginCommand command = getCommand(name);
             if (command != null) { command.setExecutor(executor); command.setTabCompleter(executor); }
         }
