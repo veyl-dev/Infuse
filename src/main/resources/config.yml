@@ -131,7 +131,7 @@ effect-settings:
   feather: {wind-burst-power: 1.5, max-wind-charge: 3}
   haste: {break-speed-multiplier: 1.5}
   ocean: {passive-radius: 8}
-  emerald: {trigger-hits: 10, xp-gain: 1}
+  emerald: {trigger-hits: 10, xp-gain: 1, xp-multiplier: 2.0, spark-xp-multiplier: 4.0}
   ender: {teleport-max-radius: 15}
 storage:
   type: yaml
