@@ -96,7 +96,7 @@ public final class PlayerListener implements Listener {
     }
     @EventHandler(ignoreCancelled=true)
     public void onExperienceGain(PlayerExpChangeEvent event){
-        var player=event.getPlayer();if(effects.isEmeraldLocked(player)){event.setAmount(0);return;}if(!effects.hasEffect(player,"emerald"))return;
+        var player=event.getPlayer();if(effects.isEmeraldLocked(player)){event.setAmount(0);return;}if(!effects.hasEffect(player,"emerald")||effects.isEffectBlocked(player))return;
         double multiplier=effects.isSparkActive(player,"emerald")
                 ?plugin.getConfig().getDouble("effect-settings.emerald.spark-xp-multiplier",4.0)
                 :plugin.getConfig().getDouble("effect-settings.emerald.xp-multiplier",2.0);
@@ -106,39 +106,39 @@ public final class PlayerListener implements Listener {
     public void onFallDamage(EntityDamageEvent event){
         if(!(event.getEntity() instanceof org.bukkit.entity.Player player))return;
         if(event.getCause()!=EntityDamageEvent.DamageCause.FALL)return;
-        if(effects.hasEffect(player,"feather"))event.setCancelled(true);
+        if(effects.hasEffect(player,"feather")&&!effects.isEffectBlocked(player))event.setCancelled(true);
     }
     @EventHandler(ignoreCancelled=true)
     public void onFoodChange(FoodLevelChangeEvent event){
-        if(event.getEntity() instanceof org.bukkit.entity.Player player){if(effects.isEmeraldLocked(player)){event.setCancelled(true);return;}if(effects.hasEffect(player,"regeneration"))event.setFoodLevel(20);}
+        if(event.getEntity() instanceof org.bukkit.entity.Player player){if(effects.isEmeraldLocked(player)){event.setCancelled(true);return;}if(effects.hasEffect(player,"regeneration")&&!effects.isEffectBlocked(player))event.setFoodLevel(20);}
     }
     @EventHandler(ignoreCancelled=true)
     public void onConsumePassives(PlayerItemConsumeEvent event){
         var player=event.getPlayer();
-        if(effects.hasEffect(player,"heart")){
+        if(effects.hasEffect(player,"heart")&&!effects.isEffectBlocked(player)){
             if(event.getItem().getType()==org.bukkit.Material.ENCHANTED_GOLDEN_APPLE)
                 player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.ABSORPTION,2400,4));
             else player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.ABSORPTION,600,0));
         }
-        if(effects.hasEffect(player,"regeneration")){
+        if(effects.hasEffect(player,"regeneration")&&!effects.isEffectBlocked(player)){
             plugin.getServer().getScheduler().runTask(plugin,()->player.setSaturation(Math.min(20f,player.getSaturation()+6f)));
         }
     }
     @EventHandler(ignoreCancelled=true)
     public void onFireBow(EntityShootBowEvent event){
         if(!(event.getEntity() instanceof org.bukkit.entity.Player player))return;
-        if(!effects.hasEffect(player,"fire"))return;
+        if(!effects.hasEffect(player,"fire")||effects.isEffectBlocked(player))return;
         if(event.getForce()>=1&&event.getProjectile() instanceof Projectile projectile)projectile.setFireTicks(100);
     }
     @EventHandler(ignoreCancelled=true)
     public void onMovePassives(PlayerMoveEvent event){
         var player=event.getPlayer();
         if(event.getTo()==null||event.getFrom().getBlockX()==event.getTo().getBlockX()&&event.getFrom().getBlockY()==event.getTo().getBlockY()&&event.getFrom().getBlockZ()==event.getTo().getBlockZ())return;
-        if(effects.hasEffect(player,"fire")&&player.isInLava()){
+        if(effects.hasEffect(player,"fire")&&!effects.isEffectBlocked(player)&&player.isInLava()){
             var direction=player.getLocation().getDirection().normalize().multiply(plugin.getConfig().getDouble("effect-settings.fire.lava-walk-speed",.6));
             player.setVelocity(direction);
         }
-        if(effects.hasEffect(player,"feather")&&player.isOnGround()&&player.getFallDistance()>3){
+        if(effects.hasEffect(player,"feather")&&!effects.isEffectBlocked(player)&&player.isOnGround()&&player.getFallDistance()>3){
             double radius=plugin.getConfig().getDouble("effect-settings.feather.land-radius",4);
             for(var entity:player.getNearbyEntities(radius,radius,radius)){
                 if(entity instanceof org.bukkit.entity.LivingEntity target&&target!=player
