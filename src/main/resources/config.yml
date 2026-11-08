@@ -18,19 +18,19 @@ settings:
 items:
   potion-material: POTION
   custom-model-data:
-    emerald: 414101
-    feather: 414102
-    fire: 414103
-    frost: 414104
-    haste: 414105
-    heart: 414106
-    invisibility: 414107
-    ocean: 414108
-    regeneration: 414109
-    speed: 414110
-    strength: 414111
-    thunder: 414112
-    ender: 414113
+    emerald: 414001
+    feather: 414002
+    fire: 414003
+    frost: 414004
+    haste: 414006
+    heart: 414007
+    invisibility: 414008
+    ocean: 414009
+    regeneration: 414010
+    speed: 414011
+    strength: 414012
+    thunder: 414005
+    ender: 414013
     wind-charge-base: 414900
     wind-charge-active: 414901
 effects:
