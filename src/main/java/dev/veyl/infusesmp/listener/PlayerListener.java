@@ -112,7 +112,8 @@ public final class PlayerListener implements Listener {
         var effect=dev.veyl.infusesmp.effect.InfuseEffect.fromId(id);if(effect==null)return;
         boolean augmented=slot.equals("primary")?data.primaryAugmented():data.secondaryAugmented();
         event.getDrops().add(effects.createEffectItem(effect,augmented));
-        effects.remove(player,slot);
+        if(slot.equals("primary"))data.primary(null,false);else data.secondary(null,false);
+        data.addHistory("death-drop:"+slot+":"+id);
     }
     @EventHandler(ignoreCancelled=true)
     public void onExperienceGain(PlayerExpChangeEvent event){
