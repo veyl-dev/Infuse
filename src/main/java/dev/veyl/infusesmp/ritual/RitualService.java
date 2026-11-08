@@ -10,6 +10,8 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.EnderCrystal;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -27,6 +29,7 @@ public final class RitualService implements Listener {
     private InfuseEffect effect;
     private BossBar bar;
     private BukkitTask task;
+    private EnderCrystal crystal;
     private long startedAt;
     private long durationTicks;
 
@@ -40,10 +43,16 @@ public final class RitualService implements Listener {
     public boolean start(Player player,InfuseEffect effect,Location location){
         if(isActive()||location==null||location.getBlock().getType()!=Material.BREWING_STAND)return false;
         this.stand=location.clone();this.effect=effect;
-        long seconds=Math.max(1,plugin.getConfig().getLong("rituals.duration-seconds",600));
+        long defaultSeconds=effect.id().equals("ender")?plugin.getConfig().getLong("rituals.ender-duration-seconds",3600):plugin.getConfig().getLong("rituals.duration-seconds",600);
+        long seconds=Math.max(1,defaultSeconds);
         this.durationTicks=seconds*20L;this.startedAt=System.currentTimeMillis();
         this.bar=Bukkit.createBossBar("InfuseSMP S3 • "+effect.displayName()+" ritual",BarColor.PURPLE,BarStyle.SOLID);
         for(Player online:Bukkit.getOnlinePlayers())bar.addPlayer(online);
+        if(plugin.getConfig().getBoolean("rituals.beacon",true)){
+            Location beam=stand.clone().add(.5,-100,.5);crystal=stand.getWorld().spawn(beam,EnderCrystal.class);
+            crystal.setShowingBottom(false);crystal.setInvulnerable(true);crystal.setInvisible(true);crystal.setPersistent(false);
+            crystal.setBeamTarget(stand.clone().add(.5,500,.5));
+        }
         Bukkit.broadcastMessage("§d"+player.getName()+" started an augmented "+effect.displayName()+" ritual at "
                 +stand.getBlockX()+", "+stand.getBlockY()+", "+stand.getBlockZ()+".");
         this.task=Bukkit.getScheduler().runTaskTimer(plugin,()->{
@@ -66,8 +75,10 @@ public final class RitualService implements Listener {
     public void stop(){
         if(task!=null){task.cancel();task=null;}
         if(bar!=null){bar.removeAll();bar=null;}
+        if(crystal!=null){crystal.remove();crystal=null;}
         stand=null;effect=null;
     }
+    @EventHandler public void onJoin(PlayerJoinEvent event){if(isActive()&&bar!=null)bar.addPlayer(event.getPlayer());}
     @EventHandler(ignoreCancelled=true)
     public void onBreak(BlockBreakEvent event){
         if(isAt(event.getBlock().getLocation())){event.setCancelled(true);event.getPlayer().sendMessage("§cThis brewing stand is protected by an active Infuse ritual.");}
