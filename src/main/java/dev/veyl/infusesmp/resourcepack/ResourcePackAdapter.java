@@ -86,7 +86,7 @@ public final class ResourcePackAdapter {
     private static String metadata(int format){
         String description="Infuse SMP Season 3 - original textures and sounds";
         if(format<=64)return "{\n  \"pack\": {\n    \"pack_format\": "+format+",\n    \"description\": \""+description+"\"\n  }\n}";
-        int major=format/10,minor=format%10;
+        int major=format,minor=0;
         if(format==971){major=97;minor=1;}
         return "{\n  \"pack\": {\n    \"min_format\": ["+major+", "+minor+"],\n    \"max_format\": ["+major+", "+minor+"],\n    \"description\": \""+description+"\"\n  }\n}";
     }
