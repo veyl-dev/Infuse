@@ -7,6 +7,7 @@ rituals:
   protect-brewing-stand: true
 settings:
   autosave-seconds: 60
+  hit-counter-decay-seconds: 15
   allow-same-effects: false
   allow-true-damage: true
   roll-first-join: false
