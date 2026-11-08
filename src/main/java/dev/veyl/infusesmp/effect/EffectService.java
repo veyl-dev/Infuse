@@ -32,6 +32,7 @@ public final class EffectService {
     public PlayerData data(Player player){return store.get(player.getUniqueId());}
     public int effectCount(){return InfuseEffect.values().length;}
     public boolean hasEffect(Player player,String id){PlayerData d=data(player);return id.equals(d.primary())||id.equals(d.secondary());}
+    public boolean isEmeraldLocked(Player player){return data(player).cooldowns().getOrDefault("emerald-lock",0L)>System.currentTimeMillis();}
     public boolean isEffectBlocked(Player player){return isEffectBlocked(player.getLocation());}
     public boolean isEffectBlocked(org.bukkit.Location location){
         if(plugin.getConfig().getStringList("settings.disabled-worlds").contains(location.getWorld().getName()))return true;
@@ -399,7 +400,23 @@ public final class EffectService {
             event.setDamage(damage);
         }
         if(!(victim instanceof Player)&&isSparkActive(attacker,"ender"))victim.setHealth(0.0);
-        if(victim instanceof Player target)onCombatHit(attacker,target);
+        if(victim instanceof Player defender){
+            PlayerData taken=data(defender);
+            int hits=taken.chargeTaken()+1;
+            if(hits>=10){
+                taken.chargeTaken(0);
+                if(hasEffect(defender,"feather")){
+                    attacker.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING,100,2));
+                    defender.setVelocity(new Vector(0,.5,0));
+                    org.bukkit.entity.WindCharge charge=defender.getWorld().spawn(defender.getLocation().add(0,1,0),org.bukkit.entity.WindCharge.class);
+                    charge.setShooter(defender);
+                    Vector direction=attacker.getLocation().toVector().subtract(charge.getLocation().toVector());
+                    if(direction.lengthSquared()>.001)charge.setVelocity(direction.normalize());
+                }
+                if(hasEffect(defender,"emerald"))data(attacker).cooldowns().put("emerald-lock",System.currentTimeMillis()+plugin.getConfig().getLong("effect-settings.emerald.lock-duration-seconds",10)*1000L);
+            }else taken.chargeTaken(hits);
+            onCombatHit(attacker,defender);
+        }
     }
     public void onCombatHit(Player attacker,Player victim){
         processHit(attacker,victim,true);
