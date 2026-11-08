@@ -25,10 +25,11 @@ import java.util.List;
 public final class MenuService implements Listener {
     private final InfuseSMP plugin;
     private final EffectService effects;
+    private final RecipeService recipes;
     private final NamespacedKey menuKey;
     private YamlConfiguration gui;
-    public MenuService(InfuseSMP plugin,EffectService effects){
-        this.plugin=plugin;this.effects=effects;this.menuKey=new NamespacedKey(plugin,"menu_effect");
+    public MenuService(InfuseSMP plugin,EffectService effects,RecipeService recipes){
+        this.plugin=plugin;this.effects=effects;this.recipes=recipes;this.menuKey=new NamespacedKey(plugin,"menu_effect");
         reload();
     }
     public void reload(){gui=YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(),"gui.yml"));}
@@ -58,7 +59,7 @@ public final class MenuService implements Listener {
         holder.inventory=inv;
         ItemStack filler=plain(material("recipe.filler",Material.BLACK_STAINED_GLASS_PANE)," ");
         for(int i=0;i<inv.getSize();i++)inv.setItem(i,filler);
-        String[] materials=RecipeService.recipeIngredients(effect.id());
+        String[] materials=recipes.recipeIngredients(effect.id());
         List<Integer> slots=gui.getIntegerList("recipe.ingredient-slots");
         if(materials!=null)for(int i=0;i<Math.min(9,slots.size());i++){
             int slot=slots.get(i);if(slot<0||slot>=inv.getSize())continue;
