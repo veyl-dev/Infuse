@@ -106,14 +106,21 @@ public final class EffectService {
     public boolean activate(Player player,boolean primary){
         PlayerData d=data(player);String id=primary?d.primary():d.secondary();if(id==null)return false;
         InfuseEffect effect=InfuseEffect.fromId(id);if(effect==null)return false;
+        boolean augmented=primary?d.primaryAugmented():d.secondaryAugmented();
+        String slot=primary?"primary":"secondary";
         String key=(primary?"p:":"s:")+id;long now=System.currentTimeMillis();
         long until=d.cooldowns().getOrDefault(key,0L);
         if(until>now){player.sendMessage(ChatColor.RED+"Spark recharging: "+((until-now+999)/1000)+"s");return false;}
-        d.cooldowns().put(key,now+plugin.getConfig().getLong("cooldowns."+id,effect.cooldownSeconds())*1000L);
+        long duration=plugin.getConfig().getLong((augmented?"augmented-durations.":"durations.")+id,plugin.getConfig().getLong("durations."+id,10));
+        long cooldown=plugin.getConfig().getLong((augmented?"augmented-cooldowns.":"cooldowns.")+id,plugin.getConfig().getLong("cooldowns."+id,effect.cooldownSeconds()));
+        d.cooldowns().put(key,now+(duration+cooldown)*1000L);
+        d.cooldowns().put("active:"+slot+":"+id,now+duration*1000L);
         d.addHistory("spark:"+(primary?"primary:":"secondary:")+id);
         player.getWorld().playSound(player.getLocation(),Sound.BLOCK_BEACON_ACTIVATE,.7f,1.5f);
         player.getWorld().spawnParticle(Particle.END_ROD,player.getLocation().add(0,1,0),18,.5,.6,.5,.02);
-        runSpark(player,effect);return true;
+        runSpark(player,effect);
+        runTimedSpark(player,effect,duration*20L);
+        return true;
     }
     private void runSpark(Player p,InfuseEffect e){
         switch(e){
@@ -199,6 +206,76 @@ public final class EffectService {
                 p.teleport(destination);
             }
         }
+    }
+    private void runTimedSpark(Player p,InfuseEffect effect,long durationTicks){
+        switch(effect){
+            case FIRE -> new org.bukkit.scheduler.BukkitRunnable(){
+                long elapsed=0;
+                public void run(){
+                    if(!p.isOnline()||elapsed>=durationTicks){cancel();p.getWorld().spawnParticle(Particle.EXPLOSION,p.getLocation(),1);return;}
+                    for(Player target:nearbyEnemies(p,plugin.getConfig().getDouble("effect-settings.fire.spark-radius",5))){
+                        target.setFireTicks(Math.max(target.getFireTicks(),100));
+                        target.damage(plugin.getConfig().getDouble("effect-settings.fire.spark-damage",4.0),p);
+                    }
+                    elapsed+=20;
+                }
+            }.runTaskTimer(plugin,0L,20L);
+            case FROST -> {
+                for(Player target:nearbyEnemies(p,plugin.getConfig().getDouble("effect-settings.frost.spark-radius",5))){
+                    target.setFreezeTicks(Math.max(target.getFreezeTicks(),(int)durationTicks));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,(int)durationTicks,1,true,false,true));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE,(int)durationTicks,1,true,false,true));
+                }
+            }
+            case INVISIBILITY -> new org.bukkit.scheduler.BukkitRunnable(){
+                long elapsed=0;
+                public void run(){
+                    if(!p.isOnline()||elapsed>=durationTicks){cancel();return;}
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,40,0,true,false,false));
+                    for(Player ally:nearbyPlayers(p,10))if(data(p).trusted().contains(ally.getUniqueId()))ally.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,40,0,true,false,false));
+                    for(Player target:nearbyEnemies(p,10)){
+                        target.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,40,0,true,false,false));
+                        target.addPotionEffect(new PotionEffect(PotionEffectType.WITHER,20,0,true,false,false));
+                    }
+                    p.getWorld().spawnParticle(Particle.LARGE_SMOKE,p.getLocation().add(0,1,0),12,1,1,1,.01);
+                    elapsed+=20;
+                }
+            }.runTaskTimer(plugin,0L,20L);
+            case OCEAN -> new org.bukkit.scheduler.BukkitRunnable(){
+                long elapsed=0;
+                public void run(){
+                    if(!p.isOnline()||elapsed>=durationTicks){cancel();return;}
+                    for(Player target:nearbyEnemies(p,plugin.getConfig().getDouble("effect-settings.ocean.pull-radius",5))){
+                        Vector pull=p.getLocation().toVector().subtract(target.getLocation().toVector());
+                        if(pull.lengthSquared()>0.001)target.setVelocity(pull.normalize().multiply(plugin.getConfig().getDouble("effect-settings.ocean.pull-strength",.3)));
+                    }
+                    elapsed+=10;
+                }
+            }.runTaskTimer(plugin,0L,10L);
+            case THUNDER -> {
+                java.util.Map<java.util.UUID,Integer> strikes=new java.util.HashMap<>();
+                new org.bukkit.scheduler.BukkitRunnable(){
+                    long elapsed=0;
+                    public void run(){
+                        if(!p.isOnline()||elapsed>=durationTicks){cancel();return;}
+                        for(Player target:nearbyEnemies(p,plugin.getConfig().getDouble("effect-settings.thunder.spark-radius",10))){
+                            int hits=strikes.getOrDefault(target.getUniqueId(),0);
+                            if(hits>=plugin.getConfig().getInt("effect-settings.thunder.strikes-per-player",3))continue;
+                            target.getWorld().strikeLightningEffect(target.getLocation());
+                            target.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0),p);
+                            strikes.put(target.getUniqueId(),hits+1);
+                        }
+                        elapsed+=20;
+                    }
+                }.runTaskTimer(plugin,0L,20L);
+            }
+            default -> { }
+        }
+    }
+    public boolean isSparkActive(Player player,String id){
+        PlayerData d=data(player);
+        long now=System.currentTimeMillis();
+        return d.cooldowns().entrySet().stream().anyMatch(e->e.getKey().endsWith(":"+id)&&e.getKey().startsWith("active:")&&e.getValue()>now);
     }
     private List<Player> nearbyPlayers(Player source,double radius){
         List<Player> result=new java.util.ArrayList<>();
