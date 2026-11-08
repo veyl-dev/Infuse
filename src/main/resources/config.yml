@@ -2,6 +2,8 @@ regions:
   disabled: {}
 rituals:
   duration-seconds: 600
+  ender-duration-seconds: 3600
+  beacon: true
   protect-brewing-stand: true
 settings:
   autosave-seconds: 60
