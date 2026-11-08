@@ -7,6 +7,7 @@ import dev.veyl.infusesmp.ritual.RitualService;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,58 +23,77 @@ import java.io.IOException;
 import java.util.*;
 
 public final class RecipeService implements Listener {
-    private static final Map<String,String[]> PATTERNS=new LinkedHashMap<>();
-    static {
-        PATTERNS.put("emerald",new String[]{"WILD_ARMOR_TRIM_SMITHING_TEMPLATE","SNIFFER_EGG","WILD_ARMOR_TRIM_SMITHING_TEMPLATE","OMINOUS_BOTTLE","EMERALD_BLOCK","OMINOUS_BOTTLE","ENDER_CHEST","ENCHANTING_TABLE","ENDER_CHEST"});
-        PATTERNS.put("feather",new String[]{"BREEZE_ROD","PHANTOM_MEMBRANE","BREEZE_ROD","FEATHER","HEAVY_CORE","FEATHER","BREEZE_ROD","PHANTOM_MEMBRANE","BREEZE_ROD"});
-        PATTERNS.put("fire",new String[]{"NETHERITE_UPGRADE_SMITHING_TEMPLATE","RESPAWN_ANCHOR","NETHERITE_UPGRADE_SMITHING_TEMPLATE","NETHERITE_INGOT","MUSIC_DISC_PIGSTEP","NETHERITE_INGOT","NETHERITE_UPGRADE_SMITHING_TEMPLATE","RESPAWN_ANCHOR","NETHERITE_UPGRADE_SMITHING_TEMPLATE"});
-        PATTERNS.put("frost",new String[]{"FLOW_ARMOR_TRIM_SMITHING_TEMPLATE","PEARLESCENT_FROGLIGHT","FLOW_ARMOR_TRIM_SMITHING_TEMPLATE","GOAT_HORN","MUSIC_DISC_CREATOR","GOAT_HORN","FLOW_ARMOR_TRIM_SMITHING_TEMPLATE","PEARLESCENT_FROGLIGHT","FLOW_ARMOR_TRIM_SMITHING_TEMPLATE"});
-        PATTERNS.put("haste",new String[]{"DIAMOND_BLOCK","BEACON","DIAMOND_BLOCK","GOLD_BLOCK","DEEPSLATE_EMERALD_ORE","GOLD_BLOCK","DIAMOND_BLOCK","NETHERITE_PICKAXE","DIAMOND_BLOCK"});
-        PATTERNS.put("heart",new String[]{"POTION","TOTEM_OF_UNDYING","POTION","ENCHANTED_GOLDEN_APPLE","BEETROOT","ENCHANTED_GOLDEN_APPLE","POTION","TOTEM_OF_UNDYING","POTION"});
-        PATTERNS.put("invisibility",new String[]{"ENDER_EYE","MUSIC_DISC_5","ENDER_EYE","SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE","OMINOUS_TRIAL_KEY","SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE","ENDER_EYE","RECOVERY_COMPASS","ENDER_EYE"});
-        PATTERNS.put("ocean",new String[]{"TIDE_ARMOR_TRIM_SMITHING_TEMPLATE","HEART_OF_THE_SEA","TIDE_ARMOR_TRIM_SMITHING_TEMPLATE","TRIDENT","CONDUIT","TRIDENT","TIDE_ARMOR_TRIM_SMITHING_TEMPLATE","HEART_OF_THE_SEA","TIDE_ARMOR_TRIM_SMITHING_TEMPLATE"});
-        PATTERNS.put("regeneration",new String[]{"END_CRYSTAL","HONEY_BLOCK","END_CRYSTAL","PEARLESCENT_FROGLIGHT","AXOLOTL_BUCKET","PEARLESCENT_FROGLIGHT","END_CRYSTAL","MUSIC_DISC_CREATOR_MUSIC_BOX","END_CRYSTAL"});
-        PATTERNS.put("speed",new String[]{"RABBIT_FOOT","SADDLE","RABBIT_FOOT","DUNE_ARMOR_TRIM_SMITHING_TEMPLATE","DIAMOND_HORSE_ARMOR","EYE_ARMOR_TRIM_SMITHING_TEMPLATE","RABBIT_FOOT","NETHERITE_BOOTS","RABBIT_FOOT"});
-        PATTERNS.put("strength",new String[]{"PLAYER_HEAD","RIB_ARMOR_TRIM_SMITHING_TEMPLATE","PLAYER_HEAD","NETHERITE_SWORD","WITHER_ROSE","NETHERITE_AXE","PLAYER_HEAD","RIB_ARMOR_TRIM_SMITHING_TEMPLATE","PLAYER_HEAD"});
-        PATTERNS.put("thunder",new String[]{"BOLT_ARMOR_TRIM_SMITHING_TEMPLATE","LODESTONE","BOLT_ARMOR_TRIM_SMITHING_TEMPLATE","TRIDENT","CREEPER_HEAD","TRIDENT","BOLT_ARMOR_TRIM_SMITHING_TEMPLATE","LODESTONE","BOLT_ARMOR_TRIM_SMITHING_TEMPLATE"});
-        PATTERNS.put("ender",new String[]{"DRAGON_HEAD","SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE","DRAGON_HEAD","SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE","ENDER_EYE","SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE","DRAGON_HEAD","SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE","DRAGON_HEAD"});
-    }
-
     private final InfuseSMP plugin;
     private final EffectService effects;
     private final RitualService rituals;
-    private final File file;
+    private final File counterFile,recipeFile;
     private final Map<String,Integer> regularCrafted=new HashMap<>(),augmentedCrafted=new HashMap<>();
+    private YamlConfiguration recipes;
 
     public RecipeService(InfuseSMP plugin,EffectService effects,RitualService rituals){
-        this.plugin=plugin;this.effects=effects;this.rituals=rituals;this.file=new File(plugin.getDataFolder(),"crafting.yml");
-        load();registerRecipes();
+        this.plugin=plugin;this.effects=effects;this.rituals=rituals;
+        this.counterFile=new File(plugin.getDataFolder(),"crafting.yml");
+        this.recipeFile=new File(plugin.getDataFolder(),"recipes.yml");
+        loadCounters();reload();
     }
-    public static String[] recipeIngredients(String id){String[] pattern=PATTERNS.get(id);return pattern==null?null:pattern.clone();}
+    public void reload(){
+        if(!recipeFile.exists())plugin.saveResource("recipes.yml",false);
+        recipes=YamlConfiguration.loadConfiguration(recipeFile);
+        registerRecipes();
+    }
+    public String[] recipeIngredients(String id){
+        String base=recipes.contains("aug_"+id+".shape")?"aug_"+id:id;
+        List<String> shape=recipes.getStringList(base+".shape");
+        ConfigurationSection ingredients=recipes.getConfigurationSection(base+".ingredients");
+        if(shape.isEmpty()||ingredients==null)return null;
+        String[] flattened=new String[9];int index=0;
+        for(int row=0;row<3;row++)for(int col=0;col<3;col++){
+            if(row>=shape.size()||col>=shape.get(row).length()){flattened[index++]=null;continue;}
+            String symbol=String.valueOf(shape.get(row).charAt(col));
+            flattened[index++]=symbol.equals(" ")?null:ingredients.getString(symbol);
+        }
+        return flattened;
+    }
     private void registerRecipes(){
         int count=0;
-        for(Map.Entry<String,String[]> entry:PATTERNS.entrySet()){
-            InfuseEffect effect=InfuseEffect.fromId(entry.getKey());if(effect==null)continue;
+        for(InfuseEffect effect:InfuseEffect.values()){
             int regularLimit=plugin.getConfig().getInt("effects.crafting."+effect.id()+".craft-limit",-1);
             int augmentedLimit=plugin.getConfig().getInt("effects.crafting."+effect.id()+".augment-limit",0);
-            boolean augmented=regularLimit>=0&&regularCrafted.getOrDefault(effect.id(),0)>=regularLimit
-                    &&augmentedCrafted.getOrDefault(effect.id(),0)<augmentedLimit;
-            if(regularLimit>=0&&regularCrafted.getOrDefault(effect.id(),0)>=regularLimit&&!augmented)continue;
-            Material[] ingredients=new Material[9];boolean valid=true;
-            for(int i=0;i<9;i++){
-                ingredients[i]=Material.matchMaterial(entry.getValue()[i]);
-                if(ingredients[i]==null){valid=false;plugin.getLogger().warning("Unavailable recipe ingredient "+entry.getValue()[i]+" for "+effect.id());}
+            int regularCount=regularCrafted.getOrDefault(effect.id(),0);
+            int augmentedCount=augmentedCrafted.getOrDefault(effect.id(),0);
+            boolean regularAvailable=regularLimit<0||regularCount<regularLimit;
+            boolean augmentedAvailable=augmentedLimit<0||augmentedCount<augmentedLimit;
+            boolean augmented=!regularAvailable&&augmentedAvailable;
+            if(!regularAvailable&&!augmentedAvailable)continue;
+            String recipeId=augmented&&recipes.contains("aug_"+effect.id()+".shape")?"aug_"+effect.id():effect.id();
+            List<String> shape=recipes.getStringList(recipeId+".shape");
+            ConfigurationSection ingredients=recipes.getConfigurationSection(recipeId+".ingredients");
+            if(shape.isEmpty()||ingredients==null){plugin.getLogger().warning("No valid recipe definition for "+recipeId);continue;}
+            Material[] materials=new Material[9];boolean valid=true;
+            int index=0;
+            for(int row=0;row<3;row++)for(int col=0;col<3;col++){
+                if(row>=shape.size()||col>=shape.get(row).length()){index++;continue;}
+                String symbol=String.valueOf(shape.get(row).charAt(col));
+                if(symbol.equals(" ")){index++;continue;}
+                String name=ingredients.getString(symbol);
+                Material material=name==null?null:Material.matchMaterial(name);
+                if(material==null){valid=false;plugin.getLogger().warning("Invalid ingredient '"+name+"' in "+recipeId); }
+                materials[index++]=material;
             }
             if(!valid)continue;
             NamespacedKey key=new NamespacedKey(plugin,"effect_"+effect.id());
             plugin.getServer().removeRecipe(key);
-            ShapedRecipe recipe=new ShapedRecipe(key,effects.createEffectItem(effect,augmented));
-            recipe.shape("ABC","DEF","GHI");
-            char[] slots="ABCDEFGHI".toCharArray();
-            for(int i=0;i<9;i++)recipe.setIngredient(slots[i],ingredients[i]);
+            ItemStack output=effects.createEffectItem(effect,augmented);
+            ShapedRecipe recipe=new ShapedRecipe(key,output);
+            recipe.shape(shape.toArray(String[]::new));
+            for(String symbol:ingredients.getKeys(false)){
+                String materialName=ingredients.getString(symbol);
+                Material material=materialName==null?null:Material.matchMaterial(materialName);
+                if(material!=null&&!symbol.isEmpty())recipe.setIngredient(symbol.charAt(0),material);
+            }
             if(plugin.getServer().addRecipe(recipe))count++;
         }
-        plugin.getLogger().info("Registered "+count+" S3 effect recipes.");
+        plugin.getLogger().info("Registered "+count+" S3 effect recipes from recipes.yml.");
     }
     @EventHandler
     public void onBrewingStand(PlayerInteractEvent event){
@@ -86,8 +106,7 @@ public final class RecipeService implements Listener {
     @EventHandler
     public void onPrepare(PrepareItemCraftEvent event){
         ItemStack result=event.getInventory().getResult();
-        InfuseEffect effect=effects.effectFromItem(result);
-        if(effect==null)return;
+        InfuseEffect effect=effects.effectFromItem(result);if(effect==null)return;
         if(effects.isAugmentedItem(result)){
             int limit=plugin.getConfig().getInt("effects.crafting."+effect.id()+".augment-limit",0);
             if(limit>=0&&augmentedCrafted.getOrDefault(effect.id(),0)>=limit)event.getInventory().setResult(new ItemStack(Material.AIR));
@@ -120,9 +139,9 @@ public final class RecipeService implements Listener {
         }
         save();registerRecipes();
     }
-    private void load(){
-        if(!file.exists())return;
-        YamlConfiguration yaml=YamlConfiguration.loadConfiguration(file);
+    private void loadCounters(){
+        if(!counterFile.exists())return;
+        YamlConfiguration yaml=YamlConfiguration.loadConfiguration(counterFile);
         for(String id:yaml.getKeys(false)){
             regularCrafted.put(id,yaml.getInt(id+".regular",yaml.getInt(id+".normal",0)));
             augmentedCrafted.put(id,yaml.getInt(id+".augmented",0));
@@ -130,11 +149,12 @@ public final class RecipeService implements Listener {
     }
     public void save(){
         YamlConfiguration yaml=new YamlConfiguration();
-        for(String id:PATTERNS.keySet()){
+        for(InfuseEffect effect:InfuseEffect.values()){
+            String id=effect.id();
             yaml.set(id+".regular",regularCrafted.getOrDefault(id,0));
             yaml.set(id+".augmented",augmentedCrafted.getOrDefault(id,0));
         }
-        try{if(!plugin.getDataFolder().exists())plugin.getDataFolder().mkdirs();yaml.save(file);}
+        try{if(!plugin.getDataFolder().exists())plugin.getDataFolder().mkdirs();yaml.save(counterFile);}
         catch(IOException ex){plugin.getLogger().severe("Could not save crafting counters: "+ex.getMessage());}
     }
 }
