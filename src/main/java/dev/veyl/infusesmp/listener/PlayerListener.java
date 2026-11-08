@@ -19,6 +19,13 @@ import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Trident;
+import org.bukkit.entity.WindCharge;
+import org.bukkit.entity.DragonFireball;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.block.Action;
 
 public final class PlayerListener implements Listener {
     private final InfuseSMP plugin;
@@ -122,6 +129,41 @@ public final class PlayerListener implements Listener {
         }
         if(effects.hasEffect(player,"regeneration")&&!effects.isEffectBlocked(player)){
             plugin.getServer().getScheduler().runTask(plugin,()->player.setSaturation(Math.min(20f,player.getSaturation()+6f)));
+        }
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onSpecialProjectileUse(PlayerInteractEvent event){
+        if(event.getAction()!=Action.RIGHT_CLICK_AIR&&event.getAction()!=Action.RIGHT_CLICK_BLOCK)return;
+        var player=event.getPlayer();var item=event.getItem();if(item==null||effects.isEffectBlocked(player))return;
+        if(effects.hasEffect(player,"ender")&&item.getType()==org.bukkit.Material.DRAGON_BREATH&&!player.hasCooldown(org.bukkit.Material.DRAGON_BREATH)){
+            DragonFireball fireball=player.launchProjectile(DragonFireball.class);
+            fireball.setIsIncendiary(false);fireball.setYield(0f);fireball.setVelocity(fireball.getVelocity().multiply(2.0));
+            item.setAmount(item.getAmount()-1);player.setCooldown(org.bukkit.Material.DRAGON_BREATH,600);
+            event.setCancelled(true);
+        }
+        if(effects.hasEffect(player,"feather")&&item.getType()==org.bukkit.Material.WIND_CHARGE&&!player.hasCooldown(org.bukkit.Material.WIND_CHARGE)){
+            player.setCooldown(org.bukkit.Material.WIND_CHARGE,5);
+        }
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onSpecialProjectileLaunch(ProjectileLaunchEvent event){
+        if(event.getEntity() instanceof WindCharge charge&&charge.getShooter() instanceof org.bukkit.entity.Player player
+                &&effects.hasEffect(player,"feather")&&!effects.isEffectBlocked(player)){
+            charge.setVelocity(player.getEyeLocation().getDirection().normalize().multiply(2.0));
+        }
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onSpecialProjectileHit(ProjectileHitEvent event){
+        if(event.getEntity() instanceof Trident trident&&trident.getShooter() instanceof org.bukkit.entity.Player player
+                &&effects.hasEffect(player,"thunder")&&!effects.isEffectBlocked(player)
+                &&event.getHitEntity() instanceof org.bukkit.entity.LivingEntity target&&!effects.isEffectBlocked(target.getLocation())){
+            target.getWorld().strikeLightningEffect(target.getLocation());target.damage(2.0,player);
+        }
+        if(event.getEntity() instanceof DragonFireball fireball&&fireball.getShooter() instanceof org.bukkit.entity.Player player
+                &&effects.hasEffect(player,"ender")&&event.getHitEntity() instanceof org.bukkit.entity.LivingEntity target){
+            target.damage(6.0,player);
+            target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.WITHER,100,1));
+            target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.GLOWING,200,0));
         }
     }
     @EventHandler(ignoreCancelled=true)
