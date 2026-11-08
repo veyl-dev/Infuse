@@ -150,6 +150,6 @@ public final class PlayerListener implements Listener {
         String slot=data.primary()==null?"primary":data.secondary()==null?"secondary":null;
         if(slot==null){player.sendMessage(org.bukkit.ChatColor.RED+"Both Infuse slots are occupied. Drain or remove an effect first.");event.setCancelled(true);return;}
         effects.equip(player,slot,effect,effects.isAugmentedItem(event.getItem()));
-        player.sendMessage(org.bukkit.ChatColor.GREEN+effect.displayName()+" equipped in your "+slot+" slot.");
+        plugin.messages().send(player,"effect-added",java.util.Map.of("effect",effect.displayName(),"slot",slot));
     }
 }
