@@ -1,3 +1,5 @@
+regions:
+  disabled: {}
 rituals:
   duration-seconds: 600
   protect-brewing-stand: true
