@@ -80,6 +80,9 @@ public final class EffectService {
         InfuseEffect effect=effectFromItem(item);
         if(effect==null)return false;
         PlayerData d=data(player);
+        if(!plugin.getConfig().getBoolean("settings.allow-same-effects",false)&&effect.id().equals(d.primary())||!plugin.getConfig().getBoolean("settings.allow-same-effects",false)&&effect.id().equals(d.secondary())){
+            player.sendMessage(ChatColor.RED+"You cannot equip the same effect twice.");return false;
+        }
         String slot=d.primary()==null?"primary":d.secondary()==null?"secondary":null;
         if(slot==null){
             player.sendMessage(ChatColor.RED+"Both Infuse slots are occupied. Drain or remove an effect first.");
@@ -91,6 +94,10 @@ public final class EffectService {
     }
     public void equip(Player player,String slot,InfuseEffect effect,boolean augmented){
         PlayerData d=data(player);
+        if(!plugin.getConfig().getBoolean("settings.allow-same-effects",false)){
+            String other=slot.equalsIgnoreCase("primary")?d.secondary():d.primary();
+            if(effect.id().equals(other)){player.sendMessage(ChatColor.RED+"You cannot equip the same effect twice.");return;}
+        }
         if(slot.equalsIgnoreCase("primary"))d.primary(effect.id(),augmented);else d.secondary(effect.id(),augmented);
         d.addHistory("equip:"+slot+":"+effect.id());applyPassive(player);
     }
