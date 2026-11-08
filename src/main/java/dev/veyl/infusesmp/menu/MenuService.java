@@ -44,7 +44,7 @@ public final class MenuService implements Listener {
         InfuseEffect[] all=InfuseEffect.values();
         for(int i=0;i<Math.min(slots.size(),all.length);i++){
             int slot=slots.get(i);if(slot<0||slot>=inv.getSize())continue;
-            ItemStack item=effects.createEffectItem(all[i],false);
+            ItemStack item=effects.createEffectItem(all[i],all[i]==InfuseEffect.ENDER);
             ItemMeta meta=item.getItemMeta();meta.getPersistentDataContainer().set(menuKey,PersistentDataType.STRING,all[i].id());
             List<String> lore=meta.hasLore()&&meta.getLore()!=null?new java.util.ArrayList<>(meta.getLore()):new java.util.ArrayList<>();
             lore.add("");
