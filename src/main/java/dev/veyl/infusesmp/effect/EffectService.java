@@ -300,7 +300,7 @@ public final class EffectService {
                 int count=0;
                 for(Player target:nearbyEnemies(p,16)){
                     target.getWorld().strikeLightningEffect(target.getLocation());
-                    target.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",1.0),p);
+                    thunderDamage(target,p,plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0));
                     if(++count>=5)break;
                 }
             }
@@ -452,7 +452,7 @@ public final class EffectService {
             case "fire" -> victim.setFireTicks(Math.max(victim.getFireTicks(),plugin.getConfig().getInt("effect-settings.fire.ignite-ticks",100)));
             case "thunder" -> {
                 victim.getWorld().strikeLightningEffect(victim.getLocation());
-                victim.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0),attacker);
+                thunderDamage(victim,attacker,plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0));
                 chainLightning(attacker,victim,new java.util.HashSet<>(java.util.Set.of(attacker.getUniqueId(),victim.getUniqueId())),0);
             }
             case "frost" -> {
