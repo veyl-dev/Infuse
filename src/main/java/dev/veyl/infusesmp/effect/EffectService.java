@@ -92,5 +92,23 @@ public final class EffectService {
         int value=Math.min(5,(primary?d.chargePrimary():d.chargeSecondary())+1);d.charge(primary,value);
         if(value==5)p.sendActionBar(ChatColor.GREEN+(primary?"Primary":"Secondary")+" spark fully charged!");
     }
+    public boolean consumeEffectItem(Player player, ItemStack item) {
+        if (!isEffectItem(item)) return false;
+        String raw = item.getItemMeta().getPersistentDataContainer().get(itemKey, PersistentDataType.STRING);
+        if (raw == null) return false;
+        boolean augmented = raw.endsWith(":augmented");
+        String id = augmented ? raw.substring(0, raw.length() - 10) : raw;
+        InfuseEffect effect = InfuseEffect.fromId(id);
+        if (effect == null) return false;
+        PlayerData d = data(player);
+        String slot = d.primary() == null ? "primary" : d.secondary() == null ? "secondary" : null;
+        if (slot == null) {
+            player.sendMessage(ChatColor.RED + "Both Infuse slots are occupied. Drain or remove an effect first.");
+            return false;
+        }
+        equip(player, slot, effect, augmented);
+        player.sendMessage(ChatColor.GREEN + "Equipped " + effect.displayName() + " in your " + slot + " slot.");
+        return true;
+    }
     public NamespacedKey itemKey(){return itemKey;}
 }
