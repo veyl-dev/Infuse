@@ -34,7 +34,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         if(args.length!=1||(!args[0].equalsIgnoreCase("primary")&&!args[0].equalsIgnoreCase("secondary"))){
             sender.sendMessage(ChatColor.RED+"Usage: /drain <primary|secondary>");return true;
         }
-        if(!effects.drain(player,args[0]))sender.sendMessage(ChatColor.RED+"Cannot drain that slot. It may be empty or your inventory may be full.");
+        if(!effects.drain(player,args[0]))plugin.messages().send(sender,"drain-failed");
         return true;
     }
     private boolean activate(CommandSender sender,String[] args){
