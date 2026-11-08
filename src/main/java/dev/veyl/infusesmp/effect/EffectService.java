@@ -34,6 +34,17 @@ public final class EffectService {
             item.setItemMeta(meta);
         }return item;
     }
+    public InfuseEffect effectFromItem(ItemStack item){
+        if(!isEffectItem(item))return null;
+        String raw=item.getItemMeta().getPersistentDataContainer().get(itemKey,PersistentDataType.STRING);
+        if(raw==null)return null;
+        return InfuseEffect.fromId(raw.endsWith(":augmented")?raw.substring(0,raw.length()-10):raw);
+    }
+    public boolean isAugmentedItem(ItemStack item){
+        if(!isEffectItem(item))return false;
+        String raw=item.getItemMeta().getPersistentDataContainer().get(itemKey,PersistentDataType.STRING);
+        return raw!=null&&raw.endsWith(":augmented");
+    }
     public boolean isEffectItem(ItemStack item){
         return item!=null&&item.hasItemMeta()&&item.getItemMeta().getPersistentDataContainer().has(itemKey,PersistentDataType.STRING);
     }
