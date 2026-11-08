@@ -12,7 +12,7 @@ public final class PlayerDataStore {
     private final Map<UUID,PlayerData> players=new HashMap<>();
     private final File file;
     public PlayerDataStore(InfuseSMP plugin){this.plugin=plugin;this.file=new File(plugin.getDataFolder(),"players.yml");}
-    public PlayerData get(UUID uuid){return players.computeIfAbsent(uuid,k->new PlayerData());}
+    public PlayerData get(UUID uuid){return players.computeIfAbsent(uuid,k->{PlayerData d=new PlayerData();d.control(true,plugin.getConfig().getString("settings.controls.default-primary","swap"));d.control(false,plugin.getConfig().getString("settings.controls.default-secondary","drop"));return d;});}
     public void load(){
         if(!file.exists())return;
         YamlConfiguration yaml=YamlConfiguration.loadConfiguration(file);
@@ -24,8 +24,8 @@ public final class PlayerDataStore {
             d.secondary(s.getString("secondary"),s.getBoolean("secondary-augmented"));
             d.lastTrustAction(s.getLong("last-trust-action",0L));
             d.chargeTaken(s.getInt("charge-taken",0));
-            d.control(true,s.getString("controls.primary","swap"));
-            d.control(false,s.getString("controls.secondary","drop"));
+            d.control(true,s.getString("controls.primary",plugin.getConfig().getString("settings.controls.default-primary","swap")));
+            d.control(false,s.getString("controls.secondary",plugin.getConfig().getString("settings.controls.default-secondary","drop")));
             for(String value:s.getStringList("trusted"))try{d.trusted().add(UUID.fromString(value));}catch(IllegalArgumentException ignored){}
             ConfigurationSection c=s.getConfigurationSection("cooldowns");
             if(c!=null)for(String id:c.getKeys(false))d.cooldowns().put(id,c.getLong(id));
