@@ -31,6 +31,13 @@ public final class PlayerListener implements Listener {
     @EventHandler(ignoreCancelled=true)
     public void onEffectDrink(PlayerItemConsumeEvent event){
         if(!effects.isEffectItem(event.getItem()))return;
-        if(!effects.consumeEffectItem(event.getPlayer(),event.getItem()))event.setCancelled(true);
+        var player=event.getPlayer();
+        var effect=effects.effectFromItem(event.getItem());
+        if(effect==null){event.setCancelled(true);return;}
+        var data=effects.data(player);
+        String slot=data.primary()==null?"primary":data.secondary()==null?"secondary":null;
+        if(slot==null){player.sendMessage(org.bukkit.ChatColor.RED+"Both Infuse slots are occupied. Drain or remove an effect first.");event.setCancelled(true);return;}
+        effects.equip(player,slot,effect,effects.isAugmentedItem(event.getItem()));
+        player.sendMessage(org.bukkit.ChatColor.GREEN+effect.displayName()+" equipped in your "+slot+" slot.");
     }
 }
