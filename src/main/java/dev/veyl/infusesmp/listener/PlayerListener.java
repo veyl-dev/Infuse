@@ -8,6 +8,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 
 public final class PlayerListener implements Listener {
     private final InfuseSMP plugin;
@@ -28,6 +30,22 @@ public final class PlayerListener implements Listener {
         }
     }
     @EventHandler public void onQuit(PlayerQuitEvent event){store.save();}
+    @EventHandler(ignoreCancelled=true)
+    public void onSwapControl(PlayerSwapHandItemsEvent event){
+        if(!plugin.getConfig().getBoolean("settings.controls.enabled",true))return;
+        var player=event.getPlayer();var data=effects.data(player);
+        if(!"swap".equalsIgnoreCase(data.primaryControl()))return;
+        if(data.primary()==null)return;
+        if(effects.activate(player,true))event.setCancelled(true);
+    }
+    @EventHandler(ignoreCancelled=true)
+    public void onDropControl(PlayerDropItemEvent event){
+        if(!plugin.getConfig().getBoolean("settings.controls.enabled",true))return;
+        var player=event.getPlayer();var data=effects.data(player);
+        if(!"drop".equalsIgnoreCase(data.secondaryControl()))return;
+        if(data.secondary()==null)return;
+        if(effects.activate(player,false))event.setCancelled(true);
+    }
     @EventHandler(ignoreCancelled=true)
     public void onEffectDrink(PlayerItemConsumeEvent event){
         if(!effects.isEffectItem(event.getItem()))return;
