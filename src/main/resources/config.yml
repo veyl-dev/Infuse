@@ -1,0 +1,82 @@
+settings:
+  autosave-seconds: 60
+  allow-same-effects: false
+  allow-true-damage: true
+  roll-first-join: false
+  roll-animation: true
+  head-drop: false
+  lock-effect-slots: false
+  disabled-worlds: [disabled_world]
+  trust-list:
+    maximum: 3
+    action-delay-seconds: 10
+  resource-pack:
+    enabled: false
+    url: ""
+    sha1: ""
+    prompt: "Install the InfuseSMP S3 resource pack for the complete experience."
+items:
+  potion-material: POTION
+  custom-model-data:
+    emerald: 414101
+    feather: 414102
+    fire: 414103
+    frost: 414104
+    haste: 414105
+    heart: 414106
+    invisibility: 414107
+    ocean: 414108
+    regeneration: 414109
+    speed: 414110
+    strength: 414111
+    thunder: 414112
+    ender: 414113
+    wind-charge-base: 414900
+    wind-charge-active: 414901
+effects:
+  primary: [heart, strength, regeneration, haste, invisibility, frost, thunder, feather]
+  secondary: [speed, fire, ocean, emerald]
+  crafting:
+    emerald: {craft-limit: -1, augment-limit: 0}
+    feather: {craft-limit: -1, augment-limit: 0}
+    fire: {craft-limit: -1, augment-limit: 0}
+    frost: {craft-limit: -1, augment-limit: 0}
+    haste: {craft-limit: -1, augment-limit: 0}
+    heart: {craft-limit: -1, augment-limit: 0}
+    invisibility: {craft-limit: -1, augment-limit: 0}
+    ocean: {craft-limit: -1, augment-limit: 0}
+    regeneration: {craft-limit: -1, augment-limit: 0}
+    speed: {craft-limit: -1, augment-limit: 0}
+    strength: {craft-limit: -1, augment-limit: 0}
+    thunder: {craft-limit: -1, augment-limit: 0}
+    ender: {craft-limit: 1, augment-limit: 1}
+cooldowns:
+  emerald: 30
+  feather: 40
+  fire: 90
+  frost: 60
+  haste: 60
+  heart: 120
+  invisibility: 90
+  ocean: 90
+  regeneration: 60
+  speed: 20
+  strength: 60
+  thunder: 90
+  ender: 30
+effect-settings:
+  strength: {shield-disable-seconds: 10, shield-disable-durability: 20, shield-penetration: 2.0, mob-damage-multiplier: 2.0, double-critical-multiplier: 1.334}
+  heart: {passive-hearts: 15, spark-hearts: 20, return-after-hit-seconds: 10}
+  fire: {trigger-hits: 5, ignite-ticks: 100, snowball-cooldown-seconds: 15}
+  thunder: {trigger-hits: 10, lightning-chain-max: 10, lightning-chain-radius: 12}
+  frost: {trigger-hits: 10, freeze-seconds: 30, lava-walk: true}
+  invisibility: {trigger-hits: 10, spark-radius: 8}
+  regeneration: {trigger-hits: 10, spark-heal-radius: 8}
+  speed: {dash-power: 2.6, dash-damping: 0.6}
+  feather: {wind-burst-power: 1.5, max-wind-charge: 3}
+  haste: {break-speed-multiplier: 1.5}
+  ocean: {passive-radius: 8}
+  emerald: {trigger-hits: 10, xp-gain: 1}
+  ender: {teleport-max-radius: 15}
+storage:
+  type: yaml
