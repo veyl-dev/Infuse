@@ -50,6 +50,19 @@ public final class EffectService {
     public boolean isEffectItem(ItemStack item){
         return item!=null&&item.hasItemMeta()&&item.getItemMeta().getPersistentDataContainer().has(itemKey,PersistentDataType.STRING);
     }
+    public boolean consumeEffectItem(Player player,ItemStack item){
+        InfuseEffect effect=effectFromItem(item);
+        if(effect==null)return false;
+        PlayerData d=data(player);
+        String slot=d.primary()==null?"primary":d.secondary()==null?"secondary":null;
+        if(slot==null){
+            player.sendMessage(ChatColor.RED+"Both Infuse slots are occupied. Drain or remove an effect first.");
+            return false;
+        }
+        equip(player,slot,effect,isAugmentedItem(item));
+        player.sendMessage(ChatColor.GREEN+effect.displayName()+" equipped in your "+slot+" slot.");
+        return true;
+    }
     public void equip(Player player,String slot,InfuseEffect effect,boolean augmented){
         PlayerData d=data(player);
         if(slot.equalsIgnoreCase("primary"))d.primary(effect.id(),augmented);else d.secondary(effect.id(),augmented);
