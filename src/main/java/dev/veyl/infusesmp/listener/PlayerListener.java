@@ -138,7 +138,7 @@ public final class PlayerListener implements Listener {
             var direction=player.getLocation().getDirection().normalize().multiply(plugin.getConfig().getDouble("effect-settings.fire.lava-walk-speed",.6));
             player.setVelocity(direction);
         }
-        if(effects.hasEffect(player,"feather")&&!effects.isEffectBlocked(player)&&player.isOnGround()&&player.getFallDistance()>3){
+        if(effects.hasEffect(player,"feather")&&effects.isSparkActive(player,"feather")&&!effects.isEffectBlocked(player)&&player.isOnGround()&&player.getFallDistance()>3){
             double radius=plugin.getConfig().getDouble("effect-settings.feather.land-radius",4);
             for(var entity:player.getNearbyEntities(radius,radius,radius)){
                 if(entity instanceof org.bukkit.entity.LivingEntity target&&target!=player
