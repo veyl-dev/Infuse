@@ -80,6 +80,10 @@ public final class EffectService {
     public boolean consumeEffectItem(Player player,ItemStack item){
         InfuseEffect effect=effectFromItem(item);
         if(effect==null)return false;
+        PlayerData current=data(player);
+        if(plugin.getConfig().getBoolean("settings.lock-effect-slots",false)&&(current.primary()!=null||current.secondary()!=null)){
+            player.sendMessage(ChatColor.RED+"Your effect slots are locked.");return false;
+        }
         PlayerData d=data(player);
         if(!plugin.getConfig().getBoolean("settings.allow-same-effects",false)&&effect.id().equals(d.primary())||!plugin.getConfig().getBoolean("settings.allow-same-effects",false)&&effect.id().equals(d.secondary())){
             player.sendMessage(ChatColor.RED+"You cannot equip the same effect twice.");return false;
@@ -103,6 +107,7 @@ public final class EffectService {
         d.addHistory("equip:"+slot+":"+effect.id());applyPassive(player);
     }
     public boolean drain(Player player,String slot){
+        if(plugin.getConfig().getBoolean("settings.lock-effect-slots",false))return false;
         PlayerData d=data(player);
         String id=slot.equalsIgnoreCase("primary")?d.primary():d.secondary();
         if(id==null)return false;
