@@ -26,6 +26,8 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
 public final class PlayerListener implements Listener {
     private final InfuseSMP plugin;
@@ -111,6 +113,21 @@ public final class PlayerListener implements Listener {
                 :plugin.getConfig().getDouble("effect-settings.emerald.xp-multiplier",2.0);
         event.setAmount((int)Math.round(event.getAmount()*multiplier));
     }
+    private void createSnowTrail(org.bukkit.entity.Player player){
+        int radius=Math.max(1,Math.min(5,plugin.getConfig().getInt("effect-settings.frost.snow-changing-radius",3)));
+        int duration=Math.max(1,plugin.getConfig().getInt("effect-settings.frost.snow-duration-seconds",5));
+        Block center=player.getLocation().getBlock();
+        for(int x=-radius;x<=radius;x++)for(int z=-radius;z<=radius;z++){
+            if(x*x+z*z>radius*radius)continue;
+            Block ground=center.getRelative(x,-1,z);
+            Block snow=ground.getRelative(BlockFace.UP);
+            if(!ground.getType().isSolid()||snow.getType()!=org.bukkit.Material.AIR)continue;
+            snow.setType(org.bukkit.Material.SNOW,false);
+            plugin.getServer().getScheduler().runTaskLater(plugin,()->{
+                if(snow.getType()==org.bukkit.Material.SNOW)snow.setType(org.bukkit.Material.AIR,false);
+            },duration*20L);
+        }
+    }
     @EventHandler(ignoreCancelled=true)
     public void onFallDamage(EntityDamageEvent event){
         if(!(event.getEntity() instanceof org.bukkit.entity.Player player))return;
@@ -179,6 +196,7 @@ public final class PlayerListener implements Listener {
     public void onMovePassives(PlayerMoveEvent event){
         var player=event.getPlayer();
         if(event.getTo()==null||event.getFrom().getBlockX()==event.getTo().getBlockX()&&event.getFrom().getBlockY()==event.getTo().getBlockY()&&event.getFrom().getBlockZ()==event.getTo().getBlockZ())return;
+        if(effects.hasEffect(player,"frost")&&!effects.isEffectBlocked(player))createSnowTrail(player);
         if(effects.hasEffect(player,"fire")&&!effects.isEffectBlocked(player)&&player.isInLava()){
             var direction=player.getLocation().getDirection().normalize().multiply(plugin.getConfig().getDouble("effect-settings.fire.lava-walk-speed",.6));
             player.setVelocity(direction);
