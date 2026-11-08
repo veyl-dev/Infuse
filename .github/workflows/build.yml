@@ -5,6 +5,13 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: infusesmp-s3-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   build:
     strategy:
