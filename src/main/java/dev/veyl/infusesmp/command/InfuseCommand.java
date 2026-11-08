@@ -23,7 +23,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         }
         if(root.equals("trust"))return trust(sender,args);
         if(root.equals("recipes")){
-            sender.sendMessage(ChatColor.GREEN+"S3 shaped recipes are registered at crafting tables. Check the InfuseSMP S3 guide for each 3x3 pattern.");
+            if(sender instanceof Player player)plugin.menus().openEffects(player); else sender.sendMessage(ChatColor.GREEN+"S3 shaped recipes are registered at brewing stands. Use /infuse gui in-game to view them.");
             return true;
         }
         return infuse(sender,args);
