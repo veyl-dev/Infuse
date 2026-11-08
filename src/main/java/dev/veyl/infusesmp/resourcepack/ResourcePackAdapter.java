@@ -91,7 +91,7 @@ public final class ResourcePackAdapter {
         return "{\n  \"pack\": {\n    \"min_format\": ["+major+", "+minor+"],\n    \"max_format\": ["+major+", "+minor+"],\n    \"description\": \""+description+"\"\n  }\n}";
     }
     private static String modernPotionModel(){
-        StringBuilder json=new StringBuilder("{\"model\":{\"type\":\"range_dispatch\",\"property\":\"custom_model_data\",\"index\":0,\"scale\":1,\"entries\":[");
+        StringBuilder json=new StringBuilder("{\"model\":{\"type\":\"range_dispatch\",\"property\":\"minecraft:custom_model_data\",\"index\":0,\"scale\":1,\"entries\":[");
         List<Integer> ids=new ArrayList<>();
         for(int i=414001;i<=414013;i++)ids.add(i);
         for(int i=414101;i<=414113;i++)ids.add(i);
@@ -105,6 +105,7 @@ public final class ResourcePackAdapter {
     private static String legacyPotionModel(){
         StringBuilder json=new StringBuilder("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"minecraft:item/potion\"},\"overrides\":[");
         List<Integer> ids=new ArrayList<>();
+        for(int i=414001;i<=414013;i++)ids.add(i);
         for(int i=414101;i<=414113;i++)ids.add(i);
         for(int i=0;i<ids.size();i++){
             if(i>0)json.append(",");
