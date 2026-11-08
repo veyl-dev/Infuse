@@ -20,7 +20,7 @@ public final class ResourcePackAdapter {
         Map<String,byte[]> entries=new LinkedHashMap<>();
         try(InputStream input=plugin.getResource(RESOURCE)){
             if(input==null)throw new FileNotFoundException("Bundled S3 resource pack not found");
-            byte[] zip=Base64.getDecoder().decode(input.readAllBytes());
+            byte[] zip=Base64.getMimeDecoder().decode(input.readAllBytes());
             try(ZipInputStream zin=new ZipInputStream(new ByteArrayInputStream(zip))){
                 ZipEntry entry;
                 while((entry=zin.getNextEntry())!=null){
