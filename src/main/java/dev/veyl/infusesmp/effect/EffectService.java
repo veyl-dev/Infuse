@@ -6,7 +6,7 @@ import dev.veyl.infusesmp.data.PlayerDataStore;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -22,12 +22,15 @@ public final class EffectService {
     public PlayerData data(Player player){return store.get(player.getUniqueId());}
     public int effectCount(){return InfuseEffect.values().length;}
     public ItemStack createEffectItem(InfuseEffect effect,boolean augmented){
-        ItemStack item=new ItemStack(Material.POTION);ItemMeta meta=item.getItemMeta();
+        ItemStack item=new ItemStack(Material.POTION);PotionMeta meta=(PotionMeta)item.getItemMeta();
         if(meta!=null){
-            meta.setDisplayName((augmented?ChatColor.LIGHT_PURPLE:ChatColor.GREEN)+effect.displayName()+" Infuse");
+            meta.setDisplayName((augmented?ChatColor.LIGHT_PURPLE:ChatColor.GREEN)+effect.displayName()+" Effect");
+            meta.setColor(effect.color());
             meta.setCustomModelData(effect.modelData());
             meta.getPersistentDataContainer().set(itemKey,PersistentDataType.STRING,effect.id()+(augmented?":augmented":""));
-            meta.setLore(List.of(ChatColor.GRAY+"Infuse SMP Season 3",ChatColor.DARK_GRAY+"Right-click to equip"));
+            meta.setLore(List.of(ChatColor.GRAY+"Infuse SMP Season 3",
+                    ChatColor.DARK_GRAY+"Drink to equip in your next available slot",
+                    augmented?ChatColor.LIGHT_PURPLE+"Augmented Effect":ChatColor.GREEN+"Regular Effect"));
             item.setItemMeta(meta);
         }return item;
     }
