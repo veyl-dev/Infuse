@@ -365,7 +365,8 @@ public final class EffectService {
             case "fire" -> victim.setFireTicks(Math.max(victim.getFireTicks(),plugin.getConfig().getInt("effect-settings.fire.ignite-ticks",100)));
             case "thunder" -> {
                 victim.getWorld().strikeLightningEffect(victim.getLocation());
-                victim.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",1.0),attacker);
+                victim.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0),attacker);
+                chainLightning(attacker,victim,new java.util.HashSet<>(java.util.Set.of(attacker.getUniqueId(),victim.getUniqueId())),0);
             }
             case "frost" -> {
                 victim.setFreezeTicks(Math.max(victim.getFreezeTicks(),200));
@@ -378,6 +379,24 @@ public final class EffectService {
             default -> { }
         }
         attacker.sendActionBar(ChatColor.GREEN+(primary?"Primary":"Secondary")+" effect triggered!");
+    }
+    private void chainLightning(Player owner,Player from,java.util.Set<java.util.UUID> hit,int depth){
+        int max=plugin.getConfig().getInt("effect-settings.thunder.lightning-chain-max",10);
+        if(depth>=max||!owner.isOnline()||isEffectBlocked(owner))return;
+        long delay=20L;
+        plugin.getServer().getScheduler().runTaskLater(plugin,()->{
+            Player next=null;double radius=plugin.getConfig().getDouble("effect-settings.thunder.lightning-chain-radius",12);
+            for(Player candidate:nearbyPlayers(from,radius)){
+                if(hit.contains(candidate.getUniqueId()))continue;
+                if(data(owner).trusted().contains(candidate.getUniqueId())||data(candidate).trusted().contains(owner.getUniqueId()))continue;
+                next=candidate;break;
+            }
+            if(next==null)return;
+            hit.add(next.getUniqueId());
+            next.getWorld().strikeLightningEffect(next.getLocation());
+            next.damage(plugin.getConfig().getDouble("effect-settings.thunder.true-damage",2.0),owner);
+            chainLightning(owner,next,hit,depth+1);
+        },delay);
     }
     public NamespacedKey itemKey(){return itemKey;}
 }
