@@ -68,16 +68,24 @@ public final class PlayerListener implements Listener {
     @EventHandler(ignoreCancelled=true)
     public void onSwapControl(PlayerSwapHandItemsEvent event){
         if(!plugin.getConfig().getBoolean("settings.controls.enabled",true))return;
-        var player=event.getPlayer();var data=effects.data(player);
-        if(!"swap".equalsIgnoreCase(data.primaryControl()))return;
-        if(data.primary()==null)return;
-        effects.activate(player,true);event.setCancelled(true);
+        var player=event.getPlayer();if(effects.isEffectBlocked(player))return;
+        var data=effects.data(player);
+        if("swap".equalsIgnoreCase(data.primaryControl())&&data.primary()!=null){
+            effects.activate(player,true);event.setCancelled(true);
+        }else if("swap".equalsIgnoreCase(data.secondaryControl())&&data.secondary()!=null){
+            effects.activate(player,false);event.setCancelled(true);
+        }
     }
     @EventHandler(ignoreCancelled=true)
     public void onDropControl(PlayerDropItemEvent event){
         var player=event.getPlayer();var data=effects.data(player);
-        if(plugin.getConfig().getBoolean("settings.controls.enabled",true)&&"drop".equalsIgnoreCase(data.secondaryControl())&&data.secondary()!=null){
-            effects.activate(player,false);event.setCancelled(true);return;
+        if(plugin.getConfig().getBoolean("settings.controls.enabled",true)&&!effects.isEffectBlocked(player)){
+            if("drop".equalsIgnoreCase(data.primaryControl())&&data.primary()!=null){
+                effects.activate(player,true);event.setCancelled(true);return;
+            }
+            if("drop".equalsIgnoreCase(data.secondaryControl())&&data.secondary()!=null){
+                effects.activate(player,false);event.setCancelled(true);return;
+            }
         }
         effects.restoreTemporaryEnchants(event.getItemDrop().getItemStack());
     }
