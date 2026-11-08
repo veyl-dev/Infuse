@@ -47,17 +47,22 @@ public final class EffectService {
         d.addHistory("remove:"+slot);applyPassive(player);
     }
     public void applyPassive(Player player){
-        for(PotionEffectType type:new PotionEffectType[]{PotionEffectType.SPEED,PotionEffectType.STRENGTH,
-                PotionEffectType.HASTE,PotionEffectType.REGENERATION,PotionEffectType.FIRE_RESISTANCE,
-                PotionEffectType.INVISIBILITY,PotionEffectType.HEALTH_BOOST,PotionEffectType.LUCK,
-                PotionEffectType.SLOW_FALLING,PotionEffectType.DOLPHINS_GRACE,PotionEffectType.CONDUIT_POWER,
-                PotionEffectType.DARKNESS})player.removePotionEffect(type);
-        PlayerData d=data(player);applyBasicPassive(player,d.primary());applyBasicPassive(player,d.secondary());
+        if(plugin.getConfig().getStringList("settings.disabled-worlds").contains(player.getWorld().getName()))return;
+        PlayerData d=data(player);
+        applyBasicPassive(player,d.primary());
+        applyBasicPassive(player,d.secondary());
+        if("ocean".equals(d.primary())||"ocean".equals(d.secondary()))applyIfMissing(player,PotionEffectType.WATER_BREATHING,100,0);
+    }
+    public void refreshPassives(){
+        for(Player player:plugin.getServer().getOnlinePlayers())applyPassive(player);
+    }
+    private void applyIfMissing(Player player,PotionEffectType type,int duration,int amplifier){
+        if(type!=null&&!player.hasPotionEffect(type))player.addPotionEffect(new PotionEffect(type,duration,amplifier,true,false,true));
     }
     private void applyBasicPassive(Player player,String id){
-        InfuseEffect effect=InfuseEffect.fromId(id);if(effect==null||effect.passive()==null)return;
-        if(effect==InfuseEffect.ENDER)return;
-        player.addPotionEffect(new PotionEffect(effect.passive(),Integer.MAX_VALUE,0,true,false,true));
+        InfuseEffect effect=InfuseEffect.fromId(id);
+        if(effect==null||effect.passive()==null)return;
+        applyIfMissing(player,effect.passive(),100,0);
     }
     public boolean activate(Player player,boolean primary){
         PlayerData d=data(player);String id=primary?d.primary():d.secondary();if(id==null)return false;
