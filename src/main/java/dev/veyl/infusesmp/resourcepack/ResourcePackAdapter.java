@@ -93,6 +93,7 @@ public final class ResourcePackAdapter {
     private static String modernPotionModel(){
         StringBuilder json=new StringBuilder("{\"model\":{\"type\":\"range_dispatch\",\"property\":\"custom_model_data\",\"index\":0,\"scale\":1,\"entries\":[");
         List<Integer> ids=new ArrayList<>();
+        for(int i=414001;i<=414013;i++)ids.add(i);
         for(int i=414101;i<=414113;i++)ids.add(i);
         for(int i=0;i<ids.size();i++){
             if(i>0)json.append(",");
