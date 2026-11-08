@@ -42,7 +42,7 @@ public final class RecipeService implements Listener {
         registerRecipes();
     }
     public String[] recipeIngredients(String id){
-        String base=recipes.contains("aug_"+id+".shape")?"aug_"+id:id;
+        String base=id;
         List<String> shape=recipes.getStringList(base+".shape");
         ConfigurationSection ingredients=recipes.getConfigurationSection(base+".ingredients");
         if(shape.isEmpty()||ingredients==null)return null;
@@ -55,6 +55,7 @@ public final class RecipeService implements Listener {
         return flattened;
     }
     private void registerRecipes(){
+        for(InfuseEffect effect:InfuseEffect.values())plugin.getServer().removeRecipe(new NamespacedKey(plugin,"effect_"+effect.id()));
         int count=0;
         for(InfuseEffect effect:InfuseEffect.values()){
             int regularLimit=plugin.getConfig().getInt("effects.crafting."+effect.id()+".craft-limit",-1);
