@@ -22,6 +22,9 @@ public final class PlayerDataStore {
             ConfigurationSection s=root.getConfigurationSection(key);if(s==null)continue;
             PlayerData d=new PlayerData();d.primary(s.getString("primary"),s.getBoolean("primary-augmented"));
             d.secondary(s.getString("secondary"),s.getBoolean("secondary-augmented"));
+            d.lastTrustAction(s.getLong("last-trust-action",0L));
+            d.control(true,s.getString("controls.primary","swap"));
+            d.control(false,s.getString("controls.secondary","drop"));
             for(String value:s.getStringList("trusted"))try{d.trusted().add(UUID.fromString(value));}catch(IllegalArgumentException ignored){}
             ConfigurationSection c=s.getConfigurationSection("cooldowns");
             if(c!=null)for(String id:c.getKeys(false))d.cooldowns().put(id,c.getLong(id));
@@ -35,6 +38,8 @@ public final class PlayerDataStore {
             String p="players."+e.getKey();PlayerData d=e.getValue();
             yaml.set(p+".primary",d.primary());yaml.set(p+".secondary",d.secondary());
             yaml.set(p+".primary-augmented",d.primaryAugmented());yaml.set(p+".secondary-augmented",d.secondaryAugmented());
+            yaml.set(p+".last-trust-action",d.lastTrustAction());
+            yaml.set(p+".controls.primary",d.primaryControl());yaml.set(p+".controls.secondary",d.secondaryControl());
             yaml.set(p+".trusted",d.trusted().stream().map(UUID::toString).toList());
             yaml.set(p+".cooldowns",d.cooldowns());yaml.set(p+".history",new ArrayList<>(d.history()));
         }
