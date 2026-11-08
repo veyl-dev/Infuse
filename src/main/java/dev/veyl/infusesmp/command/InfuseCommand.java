@@ -59,7 +59,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
             case "gui" -> { if(sender instanceof Player player)plugin.menus().openEffects(player); else sender.sendMessage("Players only."); }
             case "reload" -> {
                 if(!sender.hasPermission("infusesmp.reload"))return deny(sender);
-                plugin.reloadConfig();plugin.messages().reload();plugin.menus().reload();sender.sendMessage(ChatColor.GREEN+"InfuseSMP S3 configuration reloaded.");
+                plugin.reloadConfig();plugin.messages().reload();plugin.menus().reload();plugin.recipes().reload();sender.sendMessage(ChatColor.GREEN+"InfuseSMP S3 configuration reloaded.");
             }
             case "get" -> {
                 Player target=args.length>1?Bukkit.getPlayerExact(args[1]):sender instanceof Player p?p:null;
