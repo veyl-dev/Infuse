@@ -8,10 +8,7 @@ import dev.veyl.infusesmp.listener.CombatListener;
 import dev.veyl.infusesmp.listener.PlayerListener;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
+import dev.veyl.infusesmp.resourcepack.ResourcePackAdapter;
 
 public final class InfuseSMP extends JavaPlugin {
     private PlayerDataStore dataStore;
@@ -22,7 +19,8 @@ public final class InfuseSMP extends JavaPlugin {
         saveDefaultConfig();
         saveResourceIfMissing("messages.yml");
         saveResourceIfMissing("gui.yml");
-        extractBundledResourcePack();
+        try { ResourcePackAdapter.extract(this); }
+        catch (Exception ex) { getLogger().severe("Could not prepare resource pack: " + ex.getMessage()); }
         dataStore = new PlayerDataStore(this);
         dataStore.load();
         effectService = new EffectService(this, dataStore);
@@ -44,22 +42,6 @@ public final class InfuseSMP extends JavaPlugin {
         if (dataStore != null) dataStore.save();
         if (recipeService != null) recipeService.save();
     }
-    private void extractBundledResourcePack() {
-        Path output = getDataFolder().toPath().resolve("resourcepack/InfuseSMP-S3-Original.zip");
-        if (Files.exists(output)) return;
-        try (InputStream input = getResource("resourcepack/InfuseSMP-S3-Original.zip.b64")) {
-            if (input == null) {
-                getLogger().warning("Bundled resource pack was not found in the plugin jar.");
-                return;
-            }
-            Files.createDirectories(output.getParent());
-            Files.write(output, Base64.getDecoder().decode(input.readAllBytes()));
-            getLogger().info("Extracted original S3 resource pack to " + output);
-        } catch (Exception ex) {
-            getLogger().severe("Could not extract bundled resource pack: " + ex.getMessage());
-        }
-    }
-
     private void saveResourceIfMissing(String name) {
         if (!getDataFolder().toPath().resolve(name).toFile().exists()) saveResource(name, false);
     }
