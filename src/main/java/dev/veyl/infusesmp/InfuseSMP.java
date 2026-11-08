@@ -1,6 +1,7 @@
 package dev.veyl.infusesmp;
 
 import dev.veyl.infusesmp.command.InfuseCommand;
+import dev.veyl.infusesmp.crafting.RecipeService;
 import dev.veyl.infusesmp.data.PlayerDataStore;
 import dev.veyl.infusesmp.effect.EffectService;
 import dev.veyl.infusesmp.listener.CombatListener;
@@ -15,6 +16,7 @@ import java.util.Base64;
 public final class InfuseSMP extends JavaPlugin {
     private PlayerDataStore dataStore;
     private EffectService effectService;
+    private RecipeService recipeService;
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -24,6 +26,8 @@ public final class InfuseSMP extends JavaPlugin {
         dataStore = new PlayerDataStore(this);
         dataStore.load();
         effectService = new EffectService(this, dataStore);
+        recipeService = new RecipeService(this, effectService);
+        getServer().getPluginManager().registerEvents(recipeService, this);
         InfuseCommand executor = new InfuseCommand(this, effectService);
         for (String name : new String[]{"infuse", "activate", "trust", "swap", "recipes"}) {
             PluginCommand command = getCommand(name);
@@ -36,7 +40,10 @@ public final class InfuseSMP extends JavaPlugin {
         getServer().getScheduler().runTaskTimer(this, effectService::refreshPassives, 20L, 20L);
         getLogger().info("InfuseSMP S3 enabled.");
     }
-    @Override public void onDisable() { if (dataStore != null) dataStore.save(); }
+    @Override public void onDisable() {
+        if (dataStore != null) dataStore.save();
+        if (recipeService != null) recipeService.save();
+    }
     private void extractBundledResourcePack() {
         Path output = getDataFolder().toPath().resolve("resourcepack/InfuseSMP-S3-Original.zip");
         if (Files.exists(output)) return;
