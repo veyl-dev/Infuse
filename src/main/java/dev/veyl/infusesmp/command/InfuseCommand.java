@@ -23,7 +23,7 @@ public final class InfuseCommand implements CommandExecutor, TabCompleter {
         }
         if(root.equals("trust"))return trust(sender,args);
         if(root.equals("recipes")){
-            sender.sendMessage(ChatColor.YELLOW+"Recipes are being migrated from the original S3 recipe definitions.");
+            sender.sendMessage(ChatColor.GREEN+"S3 shaped recipes are registered at crafting tables. Check the InfuseSMP S3 guide for each 3x3 pattern.");
             return true;
         }
         return infuse(sender,args);
