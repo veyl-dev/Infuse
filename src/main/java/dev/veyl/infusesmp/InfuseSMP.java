@@ -31,10 +31,16 @@ public final class InfuseSMP extends JavaPlugin {
         messageService = new MessageService(this);
         try {
             ResourcePackAdapter.extract(this);
+        } catch (Exception ex) {
+            getLogger().log(java.util.logging.Level.WARNING,
+                    "Could not prepare the local S3 resource-pack copy; automatic client delivery will still be attempted.", ex);
+        }
+        try {
             resourcePackInfo = ResourcePackAdapter.createResourcePackInfo(this);
             getLogger().info("Prepared automatic S3 resource-pack delivery for " + getServer().getBukkitVersion() + ".");
         } catch (Exception ex) {
-            getLogger().severe("Could not prepare automatic resource-pack delivery: " + ex.getMessage());
+            getLogger().log(java.util.logging.Level.SEVERE,
+                    "Could not prepare automatic resource-pack delivery. Check the bundled version hash and published release asset.", ex);
         }
         dataStore = new PlayerDataStore(this);
         dataStore.load();
