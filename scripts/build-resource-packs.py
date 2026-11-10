@@ -118,7 +118,9 @@ def build_one(version: str, spec: tuple[int | float, bool, bool], source_entries
             raise RuntimeError(f"{target.name} contains a corrupt entry: {bad}")
         if "pack.mcmeta" not in archive.namelist():
             raise RuntimeError(f"{target.name} has no root pack.mcmeta")
-    digest = hashlib.sha1(target.read_bytes()).hexdigest()\n    print(f"Built {target.name} (resource pack format {pack_format}, SHA-1 {digest})")\n    return digest
+    digest = hashlib.sha1(target.read_bytes()).hexdigest()
+    print(f"Built {target.name} (resource pack format {pack_format}, SHA-1 {digest})")
+    return digest
 
 
 def main() -> None:
