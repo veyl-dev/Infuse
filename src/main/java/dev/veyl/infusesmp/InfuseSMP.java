@@ -31,7 +31,7 @@ public final class InfuseSMP extends JavaPlugin {
         messageService = new MessageService(this);
         try {
             ResourcePackAdapter.extract(this);
-            resourcePackInfo = ResourcePackAdapter.createResourcePackInfo();
+            resourcePackInfo = ResourcePackAdapter.createResourcePackInfo(this);
             getLogger().info("Prepared automatic S3 resource-pack delivery for " + getServer().getBukkitVersion() + ".");
         } catch (Exception ex) {
             getLogger().severe("Could not prepare automatic resource-pack delivery: " + ex.getMessage());
