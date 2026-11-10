@@ -28,9 +28,26 @@ public final class ResourcePackAdapter {
         String asset = packAssetForVersion(Bukkit.getBukkitVersion());
         String url = RELEASE_URL + asset;
         final String sha1;
-        try (InputStream remote = URI.create(url).toURL().openStream()) {
-            byte[] bytes = remote.readAllBytes();
-            sha1 = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-1").digest(bytes));
+        try {
+            java.net.HttpURLConnection connection = (java.net.HttpURLConnection) URI.create(url).toURL().openConnection();
+            connection.setConnectTimeout(10_000);
+            connection.setReadTimeout(20_000);
+            connection.setInstanceFollowRedirects(true);
+            connection.setRequestProperty("User-Agent", "InfuseSMP-S3/" + InfuseSMP.class.getPackage().getImplementationVersion());
+            int status = connection.getResponseCode();
+            if (status != java.net.HttpURLConnection.HTTP_OK) {
+                throw new IOException("Resource-pack host returned HTTP " + status + " for " + asset);
+            }
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            try (InputStream remote = connection.getInputStream()) {
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = remote.read(buffer)) != -1) digest.update(buffer, 0, read);
+            } finally {
+                connection.disconnect();
+            }
+            sha1 = HexFormat.of().formatHex(digest.digest());
+            if (sha1.length() != 40) throw new IOException("Resource-pack SHA-1 hash is invalid");
         } catch (NoSuchAlgorithmException ex) {
             throw new IOException("SHA-1 is unavailable on this Java runtime", ex);
         }
@@ -60,7 +77,7 @@ public final class ResourcePackAdapter {
 
     public static Path extract(InfuseSMP plugin) throws IOException {
         Path output=plugin.getDataFolder().toPath().resolve("resourcepack/InfuseSMP-S3-"+safeVersion()+".zip");
-        if(Files.exists(output))return output;
+        Files.deleteIfExists(output);
         Map<String,byte[]> entries=new LinkedHashMap<>();
         try(InputStream input=plugin.getResource(RESOURCE)){
             if(input==null)throw new FileNotFoundException("Bundled S3 resource pack not found");
