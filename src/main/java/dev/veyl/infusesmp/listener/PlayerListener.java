@@ -3,6 +3,8 @@ package dev.veyl.infusesmp.listener;
 import dev.veyl.infusesmp.InfuseSMP;
 import dev.veyl.infusesmp.data.PlayerDataStore;
 import dev.veyl.infusesmp.effect.EffectService;
+import net.kyori.adventure.resource.ResourcePackRequest;
+import net.kyori.adventure.text.Component;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -51,15 +53,14 @@ public final class PlayerListener implements Listener {
             }
         }
         effects.applyPassive(player);
-        if(plugin.getConfig().getBoolean("settings.resource-pack.enabled",false)){
-            String url=plugin.getConfig().getString("settings.resource-pack.url","");
-            String hash=plugin.getConfig().getString("settings.resource-pack.sha1","");
-            if(url!=null&&!url.isBlank()){
-                String prompt=plugin.getConfig().getString("settings.resource-pack.prompt","");
-                if(prompt!=null&&!prompt.isBlank())event.getPlayer().sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&',prompt));
-                if(hash!=null&&hash.matches("(?i)[0-9a-f]{40}"))event.getPlayer().setResourcePack(url,hash);
-                else event.getPlayer().setResourcePack(url);
-            }
+        if(plugin.getConfig().getBoolean("settings.resource-pack.auto-download",true)
+                &&plugin.resourcePackInfo()!=null){
+            var request=ResourcePackRequest.resourcePackRequest()
+                    .packs(plugin.resourcePackInfo())
+                    .required(true)
+                    .prompt(Component.text("Accept the InfuseSMP S3 resource pack to see the original effect textures and icons."))
+                    .build();
+            player.sendResourcePacks(request);
         }
     }
     @EventHandler public void onQuit(PlayerQuitEvent event){effects.restoreAllTemporaryEnchants(event.getPlayer());store.save();}
