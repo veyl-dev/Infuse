@@ -55,12 +55,28 @@ public final class PlayerListener implements Listener {
         effects.applyPassive(player);
         if(plugin.getConfig().getBoolean("settings.resource-pack.auto-download",true)
                 &&plugin.resourcePackInfo()!=null){
-            var request=ResourcePackRequest.resourcePackRequest()
-                    .packs(plugin.resourcePackInfo())
-                    .required(true)
-                    .prompt(Component.text("Accept the InfuseSMP S3 resource pack to see the original effect textures and icons."))
-                    .build();
-            player.sendResourcePacks(request);
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                if (!player.isOnline() || plugin.resourcePackInfo() == null) return;
+                var request=ResourcePackRequest.resourcePackRequest()
+                        .packs(plugin.resourcePackInfo())
+                        .required(true)
+                        .prompt(Component.text("InfuseSMP S3 requires its resource pack for the original effect textures and icons."))
+                        .build();
+                player.sendResourcePacks(request);
+                plugin.getLogger().info("Sent the S3 resource pack request to " + player.getName() + ".");
+            }, 40L);
+        }
+    }
+    @EventHandler
+    public void onResourcePackStatus(org.bukkit.event.player.PlayerResourcePackStatusEvent event) {
+        String status = event.getStatus().name();
+        if (status.equals("SUCCESSFULLY_LOADED")) {
+            plugin.getLogger().info(event.getPlayer().getName() + " loaded the InfuseSMP S3 resource pack.");
+        } else {
+            plugin.getLogger().warning(event.getPlayer().getName() + " resource-pack status: " + status + ".");
+            if (status.equals("FAILED_DOWNLOAD") || status.equals("INVALID_URL") || status.equals("FAILED_RELOAD")) {
+                event.getPlayer().sendMessage("§cInfuseSMP S3 resource pack failed to load. Please reconnect or contact a server administrator.");
+            }
         }
     }
     @EventHandler public void onQuit(PlayerQuitEvent event){effects.restoreAllTemporaryEnchants(event.getPlayer());store.save();}
