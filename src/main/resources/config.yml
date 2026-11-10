@@ -43,10 +43,9 @@ settings:
     maximum: 3
     action-delay-seconds: 10
   resource-pack:
-    enabled: false
-    url: ""
-    sha1: ""
-    prompt: "Install the InfuseSMP S3 resource pack for the complete experience."
+    # The plugin hosts and verifies the matching pack automatically.
+    # Set auto-download to false only if you intentionally do not want to send it.
+    auto-download: true
 
 items:
   potion-material: POTION
