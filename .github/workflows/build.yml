@@ -43,3 +43,28 @@ jobs:
         with:
           name: InfuseSMP-S3-${{ matrix.target }}
           path: build/libs/*.jar
+
+  publish-resource-packs:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Build version-matched S3 resource packs
+        run: python scripts/build-resource-packs.py
+      - name: Publish resource packs for automatic client download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: s3-resourcepack
+          name: InfuseSMP S3 Resource Pack
+          files: dist/resourcepacks/*.zip
+          overwrite_files: true
+          make_latest: false
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
