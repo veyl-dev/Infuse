@@ -3,6 +3,10 @@ package dev.veyl.infusesmp.effect;
 import dev.veyl.infusesmp.InfuseSMP;
 import dev.veyl.infusesmp.data.PlayerData;
 import dev.veyl.infusesmp.data.PlayerDataStore;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -52,18 +56,43 @@ public final class EffectService {
         return false;
     }
     public ItemStack createEffectItem(InfuseEffect effect,boolean augmented){
-        ItemStack item=new ItemStack(Material.POTION);PotionMeta meta=(PotionMeta)item.getItemMeta();
+        ItemStack item=new ItemStack(Material.POTION);
+        PotionMeta meta=(PotionMeta)item.getItemMeta();
         if(meta!=null){
-            meta.setDisplayName((augmented?ChatColor.LIGHT_PURPLE:ChatColor.GREEN)+effect.displayName()+" Effect");
+            TextColor accent=TextColor.fromHexString(effectColor(effect));
+            String itemName=(augmented?"Augmented ":"")+effect.displayName()+" Effect";
+            meta.displayName(Component.text(itemName,accent));
             meta.setColor(effect.color());
             meta.setCustomModelData(effect.modelData()+(augmented?100:0));
             meta.getPersistentDataContainer().set(itemKey,PersistentDataType.STRING,effect.id()+(augmented?":augmented":""));
-            meta.setLore(effectLore(effect,augmented));
+            meta.lore(effectLore(effect,augmented));
             item.setItemMeta(meta);
-        }return item;
+        }
+        return item;
     }
 
-    private List<String> effectLore(InfuseEffect effect,boolean augmented){
+    /**
+     * The original PluginMart Infuse item palette, retained for S3 effect items.
+     */
+    private String effectColor(InfuseEffect effect){
+        return switch(effect){
+            case EMERALD -> "#009420";
+            case ENDER -> "#AA00AA";
+            case FEATHER -> "#BEA3CA";
+            case FIRE -> "#E85720";
+            case FROST -> "#55FFFF";
+            case HASTE -> "#BD934F";
+            case HEART -> "#FF5555";
+            case INVISIBILITY -> "#2B0078";
+            case OCEAN -> "#5555FF";
+            case REGENERATION -> "#FC00DD";
+            case SPEED -> "#E8BD74";
+            case STRENGTH -> "#AA0000";
+            case THUNDER -> "#FFFF55";
+        };
+    }
+
+    private List<Component> effectLore(InfuseEffect effect,boolean augmented){
         String icon;
         List<String> passive;
         List<String> spark;
@@ -83,17 +112,19 @@ public final class EffectService {
             case ENDER -> {icon="⭐";passive=List.of("All nearby untrusted players have glowing","Use dragon's breath to shoot powerful fireballs that curse players","Curse untrusted players on hit which shares damage with all cursed players");spark=List.of("Teleport to the cursor position within a 15 block radius","Instantly kills any mob and curses players","Cursing a player resets the spark cooldown");}
             default -> throw new IllegalArgumentException("Unsupported effect: "+effect);
         }
-        List<String> lore=new ArrayList<>();
-        lore.add(ChatColor.DARK_GRAY+"ᴘᴀꜱꜱɪᴠᴇ ᴇꜰꜰᴇᴄᴛꜱ:");
-        for(String line:passive)lore.add(ChatColor.GRAY+icon+" "+line);
-        lore.add("");
-        lore.add(ChatColor.DARK_GRAY+"ꜱᴘᴀʀᴋ ᴇꜰꜰᴇᴄᴛꜱ:");
-        for(String line:spark)lore.add(ChatColor.GRAY+icon+" "+line);
-        lore.add("");
-        lore.add(augmented?ChatColor.LIGHT_PURPLE+"Augmented Effect":ChatColor.GREEN+"Regular Effect");
-        lore.add(ChatColor.DARK_GRAY+"Drink to equip in your next available slot");
+        TextColor accent=TextColor.fromHexString(effectColor(effect));
+        List<Component> lore=new ArrayList<>();
+        lore.add(Component.text("ᴘᴀꜱꜱɪᴠᴇ ᴇꜰꜰᴇᴄᴛꜱ:",accent).decorate(TextDecoration.BOLD));
+        for(String line:passive)lore.add(Component.text(icon+" ",accent).append(Component.text(line,NamedTextColor.DARK_GRAY)));
+        lore.add(Component.empty());
+        lore.add(Component.text("ꜱᴘᴀʀᴋ ᴇꜰꜰᴇᴄᴛꜱ:",accent).decorate(TextDecoration.BOLD));
+        for(String line:spark)lore.add(Component.text(icon+" ",accent).append(Component.text(line,NamedTextColor.DARK_GRAY)));
+        lore.add(Component.empty());
+        lore.add(Component.text(augmented?"Augmented Effect":"Regular Effect",NamedTextColor.DARK_AQUA));
+        lore.add(Component.text("Drink to equip in your next available slot",NamedTextColor.DARK_GRAY));
         return lore;
     }
+
     public InfuseEffect effectFromItem(ItemStack item){
         if(!isEffectItem(item))return null;
         String raw=item.getItemMeta().getPersistentDataContainer().get(itemKey,PersistentDataType.STRING);
