@@ -37,6 +37,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Generate version-matched resource packs and runtime hashes
+        run: python scripts/build-resource-packs.py
       - name: Build ${{ matrix.target }}
         run: gradle clean build --no-daemon -PtargetJava=${{ matrix.java }} -PpaperApiVersion=${{ matrix.paper-api }} -PtargetApi=${{ matrix.api-version }}
       - uses: actions/upload-artifact@v4
