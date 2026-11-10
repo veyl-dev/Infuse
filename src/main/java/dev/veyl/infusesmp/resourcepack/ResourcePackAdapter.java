@@ -2,8 +2,12 @@ package dev.veyl.infusesmp.resourcepack;
 
 import dev.veyl.infusesmp.InfuseSMP;
 import org.bukkit.Bukkit;
+import net.kyori.adventure.resource.ResourcePackInfo;
 
 import java.io.*;
+import java.net.URI;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
@@ -13,6 +17,46 @@ import java.util.zip.*;
 public final class ResourcePackAdapter {
     private static final String RESOURCE = "resourcepack/InfuseSMP-S3-Original.zip.b64";
     private ResourcePackAdapter() {}
+
+    private static final String RELEASE_URL = "https://github.com/veyl-dev/Infuse/releases/download/s3-resourcepack/";
+
+    /**
+     * Builds the same URL + SHA-1 resource-pack descriptor used by PluginMart Infuse.
+     * Each supported client version receives a pack generated for its resource-pack format.
+     */
+    public static ResourcePackInfo createResourcePackInfo() throws IOException {
+        String asset = packAssetForVersion(Bukkit.getBukkitVersion());
+        String url = RELEASE_URL + asset;
+        final String sha1;
+        try (InputStream remote = URI.create(url).toURL().openStream()) {
+            byte[] bytes = remote.readAllBytes();
+            sha1 = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-1").digest(bytes));
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IOException("SHA-1 is unavailable on this Java runtime", ex);
+        }
+        UUID id = UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8));
+        return ResourcePackInfo.resourcePackInfo(id, URI.create(url), sha1);
+    }
+
+    private static String packAssetForVersion(String version) throws IOException {
+        int[] v = parseVersion(version);
+        if (v[0] >= 26) {
+            if (v[1] == 1) return "InfuseSMP-S3-26.1.zip";
+            if (v[1] == 2) return "InfuseSMP-S3-26.2.zip";
+            if (v[1] >= 3) return "InfuseSMP-S3-26.3.zip";
+        }
+        if (v[0] == 1 && v[1] == 21) {
+            if (v[2] <= 1) return "InfuseSMP-S3-1.21.1.zip";
+            if (v[2] <= 3) return "InfuseSMP-S3-1.21.2.zip";
+            if (v[2] == 4) return "InfuseSMP-S3-1.21.4.zip";
+            if (v[2] == 5) return "InfuseSMP-S3-1.21.5.zip";
+            if (v[2] == 6) return "InfuseSMP-S3-1.21.6.zip";
+            if (v[2] <= 8) return "InfuseSMP-S3-1.21.8.zip";
+            if (v[2] <= 10) return "InfuseSMP-S3-1.21.10.zip";
+            return "InfuseSMP-S3-1.21.11.zip";
+        }
+        throw new IOException("No S3 resource pack is published for Minecraft " + version);
+    }
 
     public static Path extract(InfuseSMP plugin) throws IOException {
         Path output=plugin.getDataFolder().toPath().resolve("resourcepack/InfuseSMP-S3-"+safeVersion()+".zip");
