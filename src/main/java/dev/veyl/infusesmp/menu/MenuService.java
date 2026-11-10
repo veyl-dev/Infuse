@@ -4,6 +4,8 @@ import dev.veyl.infusesmp.InfuseSMP;
 import dev.veyl.infusesmp.crafting.RecipeService;
 import dev.veyl.infusesmp.effect.EffectService;
 import dev.veyl.infusesmp.effect.InfuseEffect;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -20,6 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class MenuService implements Listener {
@@ -46,11 +49,11 @@ public final class MenuService implements Listener {
             int slot=slots.get(i);if(slot<0||slot>=inv.getSize())continue;
             ItemStack item=effects.createEffectItem(all[i],all[i]==InfuseEffect.ENDER);
             ItemMeta meta=item.getItemMeta();meta.getPersistentDataContainer().set(menuKey,PersistentDataType.STRING,all[i].id());
-            List<String> lore=meta.hasLore()&&meta.getLore()!=null?new java.util.ArrayList<>(meta.getLore()):new java.util.ArrayList<>();
-            lore.add("");
-            lore.add(ChatColor.GRAY+"Click to view the original S3 recipe");
-            lore.add(ChatColor.DARK_GRAY+"Regular and augmented variants");
-            meta.setLore(lore);
+            List<Component> lore=meta.lore()!=null?new ArrayList<>(meta.lore()):new ArrayList<>();
+            lore.add(Component.empty());
+            lore.add(Component.text("Click to view the original S3 recipe",NamedTextColor.GRAY));
+            lore.add(Component.text("Regular and augmented variants",NamedTextColor.DARK_GRAY));
+            meta.lore(lore);
             item.setItemMeta(meta);inv.setItem(slot,item);
         }
         set(inv,"effects.close-slot",49,plain(Material.BARRIER,ChatColor.RED+"Close"));
