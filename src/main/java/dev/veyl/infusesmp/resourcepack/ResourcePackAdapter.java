@@ -6,8 +6,6 @@ import net.kyori.adventure.resource.ResourcePackInfo;
 
 import java.io.*;
 import java.net.URI;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
@@ -24,35 +22,22 @@ public final class ResourcePackAdapter {
      * Builds the same URL + SHA-1 resource-pack descriptor used by PluginMart Infuse.
      * Each supported client version receives a pack generated for its resource-pack format.
      */
-    public static ResourcePackInfo createResourcePackInfo() throws IOException {
+    public static ResourcePackInfo createResourcePackInfo(InfuseSMP plugin) throws IOException {
         String asset = packAssetForVersion(Bukkit.getBukkitVersion());
-        String url = RELEASE_URL + asset;
-        final String sha1;
-        try {
-            java.net.HttpURLConnection connection = (java.net.HttpURLConnection) URI.create(url).toURL().openConnection();
-            connection.setConnectTimeout(10_000);
-            connection.setReadTimeout(20_000);
-            connection.setInstanceFollowRedirects(true);
-            connection.setRequestProperty("User-Agent", "InfuseSMP-S3/" + InfuseSMP.class.getPackage().getImplementationVersion());
-            int status = connection.getResponseCode();
-            if (status != java.net.HttpURLConnection.HTTP_OK) {
-                throw new IOException("Resource-pack host returned HTTP " + status + " for " + asset);
+        Properties hashes = new Properties();
+        try (InputStream input = plugin.getResource("resourcepack/pack-hashes.properties")) {
+            if (input == null) {
+                throw new FileNotFoundException("Generated resource-pack hashes are missing from the plugin JAR");
             }
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
-            try (InputStream remote = connection.getInputStream()) {
-                byte[] buffer = new byte[8192];
-                int read;
-                while ((read = remote.read(buffer)) != -1) digest.update(buffer, 0, read);
-            } finally {
-                connection.disconnect();
-            }
-            sha1 = HexFormat.of().formatHex(digest.digest());
-            if (sha1.length() != 40) throw new IOException("Resource-pack SHA-1 hash is invalid");
-        } catch (NoSuchAlgorithmException ex) {
-            throw new IOException("SHA-1 is unavailable on this Java runtime", ex);
+            hashes.load(input);
         }
+        String sha1 = hashes.getProperty(asset);
+        if (sha1 == null || !sha1.matches("(?i)[0-9a-f]{40}")) {
+            throw new IOException("No valid SHA-1 hash is bundled for resource pack " + asset);
+        }
+        String url = RELEASE_URL + asset;
         UUID id = UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8));
-        return ResourcePackInfo.resourcePackInfo(id, URI.create(url), sha1);
+        return ResourcePackInfo.resourcePackInfo(id, URI.create(url), sha1.toLowerCase(Locale.ROOT));
     }
 
     private static String packAssetForVersion(String version) throws IOException {
