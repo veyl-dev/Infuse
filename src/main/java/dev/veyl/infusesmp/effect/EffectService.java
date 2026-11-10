@@ -61,7 +61,7 @@ public final class EffectService {
         if(meta!=null){
             TextColor accent=TextColor.fromHexString(effectColor(effect));
             String itemName=(augmented?"Augmented ":"")+effect.displayName()+" Effect";
-            meta.displayName(Component.text(itemName,accent));
+            meta.displayName(Component.text(itemName,accent).decoration(TextDecoration.ITALIC,false));
             meta.setColor(effect.color());
             meta.setCustomModelData(effect.modelData()+(augmented?100:0));
             meta.getPersistentDataContainer().set(itemKey,PersistentDataType.STRING,effect.id()+(augmented?":augmented":""));
@@ -114,14 +114,14 @@ public final class EffectService {
         }
         TextColor accent=TextColor.fromHexString(effectColor(effect));
         List<Component> lore=new ArrayList<>();
-        lore.add(Component.text("ᴘᴀꜱꜱɪᴠᴇ ᴇꜰꜰᴇᴄᴛꜱ:",accent).decorate(TextDecoration.BOLD));
-        for(String line:passive)lore.add(Component.text(icon+" ",accent).append(Component.text(line,NamedTextColor.DARK_GRAY)));
+        lore.add(Component.text("ᴘᴀꜱꜱɪᴠᴇ ᴇꜰꜰᴇᴄᴛꜱ:",accent).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC,false));
+        for(String line:passive)lore.add(Component.text(icon+" ",accent).decoration(TextDecoration.ITALIC,false).append(Component.text(line,NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC,false)));
         lore.add(Component.empty());
-        lore.add(Component.text("ꜱᴘᴀʀᴋ ᴇꜰꜰᴇᴄᴛꜱ:",accent).decorate(TextDecoration.BOLD));
-        for(String line:spark)lore.add(Component.text(icon+" ",accent).append(Component.text(line,NamedTextColor.DARK_GRAY)));
+        lore.add(Component.text("ꜱᴘᴀʀᴋ ᴇꜰꜰᴇᴄᴛꜱ:",accent).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC,false));
+        for(String line:spark)lore.add(Component.text(icon+" ",accent).decoration(TextDecoration.ITALIC,false).append(Component.text(line,NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC,false)));
         lore.add(Component.empty());
-        lore.add(Component.text(augmented?"Augmented Effect":"Regular Effect",NamedTextColor.DARK_AQUA));
-        lore.add(Component.text("Drink to equip in your next available slot",NamedTextColor.DARK_GRAY));
+        lore.add(Component.text(augmented?"Augmented Effect":"Regular Effect",NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC,false));
+        lore.add(Component.text("Drink to equip in your next available slot",NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC,false));
         return lore;
     }
 
