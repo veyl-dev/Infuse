@@ -12,6 +12,7 @@ import dev.veyl.infusesmp.message.MessageService;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import dev.veyl.infusesmp.resourcepack.ResourcePackAdapter;
+import net.kyori.adventure.resource.ResourcePackInfo;
 
 public final class InfuseSMP extends JavaPlugin {
     private PlayerDataStore dataStore;
@@ -20,6 +21,7 @@ public final class InfuseSMP extends JavaPlugin {
     private RitualService ritualService;
     private MenuService menuService;
     private MessageService messageService;
+    private ResourcePackInfo resourcePackInfo;
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -27,8 +29,13 @@ public final class InfuseSMP extends JavaPlugin {
         saveResourceIfMissing("gui.yml");
         saveResourceIfMissing("recipes.yml");
         messageService = new MessageService(this);
-        try { ResourcePackAdapter.extract(this); }
-        catch (Exception ex) { getLogger().severe("Could not prepare resource pack: " + ex.getMessage()); }
+        try {
+            ResourcePackAdapter.extract(this);
+            resourcePackInfo = ResourcePackAdapter.createResourcePackInfo();
+            getLogger().info("Prepared automatic S3 resource-pack delivery for " + getServer().getBukkitVersion() + ".");
+        } catch (Exception ex) {
+            getLogger().severe("Could not prepare automatic resource-pack delivery: " + ex.getMessage());
+        }
         dataStore = new PlayerDataStore(this);
         dataStore.load();
         effectService = new EffectService(this, dataStore);
@@ -63,4 +70,5 @@ public final class InfuseSMP extends JavaPlugin {
     public MessageService messages() { return messageService; }
     public RecipeService recipes() { return recipeService; }
     public PlayerDataStore data() { return dataStore; }
+    public ResourcePackInfo resourcePackInfo() { return resourcePackInfo; }
 }
