@@ -64,13 +64,15 @@ Each effect has its own passive behavior, spark ability, cooldown, duration, and
 
 ### Included resource pack
 
-The original S3 texture pack is bundled with the plugin and adapted for the detected Minecraft server version when the plugin starts. The generated ZIP is placed in:
+The original S3 texture pack is bundled with the plugin. GitHub Actions builds and publishes version-matched ZIPs for supported Minecraft releases to the [S3 resource-pack release](https://github.com/veyl-dev/Infuse/releases/tag/s3-resourcepack).
+
+On startup, the plugin selects the matching pack, calculates its SHA-1, and automatically sends a resource-pack request when a player joins. No external hosting, URL, or SHA-1 configuration is required.
+
+Automatic delivery is enabled by default. Set `settings.resource-pack.auto-download: false` in `config.yml` only if you intentionally want to disable it. A local adapted copy is also stored in:
 
 ```
 plugins/InfuseSMP-S3/resourcepack/
 ```
-
-The plugin can prompt players to download the pack when you provide a public HTTPS download URL and its SHA-1 hash. The plugin prepares the pack but does not host the file.
 
 ## Commands
 
